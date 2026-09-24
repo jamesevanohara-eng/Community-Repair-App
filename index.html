@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FixFishers helps neighbors report local issues and follow community repairs.">
+  <title>FixFishers — Make our community better</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="FixFishers home">
+      <span class="brand-mark">F<span>+</span></span>
+      <span>Fix<span class="brand-light">Fishers</span></span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <nav class="nav-links" id="navLinks">
+      <a href="#issues">Community reports</a>
+      <a href="#how">How it works</a>
+      <a href="#about">About</a>
+      <a class="nav-cta" href="#report">＋ Report an issue</a>
+    </nav>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="eyebrow"><span class="pulse"></span> YOUR NEIGHBORHOOD. YOUR VOICE.</div>
+        <h1>See something that needs fixing?<br><span>Let's fix it together.</span></h1>
+        <p>From potholes to flooding, help make Fishers safer and better by bringing local issues into view.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#report">Report a problem <span>↗</span></a>
+          <a class="button button-quiet" href="#issues">Explore community reports <span>↓</span></a>
+        </div>
+        <div class="hero-note"><span class="avatar-stack"><i>J</i><i>M</i><i>A</i></span><span><strong>Neighbors helping neighbors</strong><br>Small reports can make a big difference.</span></div>
+      </div>
+      <div class="hero-art" aria-label="Illustration of a neighborhood street">
+        <div class="sun"></div>
+        <div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
+        <div class="hill hill-back"></div><div class="hill hill-front"></div>
+        <div class="house house-one"><div class="roof"></div><div class="house-body"><span class="window"></span><span class="door"></span></div></div>
+        <div class="house house-two"><div class="roof"></div><div class="house-body"><span class="window"></span><span class="door"></span></div></div>
+        <div class="tree tree-one"><i></i><b></b></div><div class="tree tree-two"><i></i><b></b></div>
+        <div class="road"><span></span><span></span><span></span></div>
+        <div class="location-pin"><b>!</b></div>
+        <div class="art-label"><span class="label-dot"></span> Fishers, Indiana <small>Community-first action</small></div>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Community snapshot">
+      <div><strong id="totalCount">3</strong><span>Reports in this demo</span></div>
+      <div><strong>4</strong><span>Issue categories</span></div>
+      <div><strong>1</strong><span>Shared community</span></div>
+      <p>Demo data shown — not official City of Fishers statistics.</p>
+    </section>
+
+    <section class="section report-section" id="report">
+      <div class="section-heading">
+        <div><div class="eyebrow">MAKE A DIFFERENCE</div><h2>Report an issue</h2><p>Tell the community what you noticed. Please don't include private or sensitive information.</p></div>
+        <span class="step-badge">01 <span>/ 02</span></span>
+      </div>
+      <form id="reportForm" class="report-form">
+        <div class="form-grid">
+          <label>What needs attention?
+            <select id="category" required>
+              <option value="">Choose a category</option>
+              <option>Pothole / road damage</option>
+              <option>Flooding / drainage</option>
+              <option>Tree / sidewalk</option>
+              <option>Streetlight / sign</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label>Where is it?
+            <input id="location" type="text" placeholder="Street, intersection, or public landmark" maxlength="120" required>
+          </label>
+          <label class="full">What did you notice?
+            <textarea id="description" rows="4" maxlength="500" placeholder="Describe the issue and anything helpful to know..." required></textarea>
+            <span class="field-hint">Keep it brief and avoid names, phone numbers, or other personal details.</span>
+          </label>
+        </div>
+        <div class="form-bottom"><span><span class="lock">◇</span> Demo only: your report stays in this browser.</span><button class="button button-primary" type="submit">Submit report <span>↗</span></button></div>
+        <p id="formMessage" class="form-message" role="status"></p>
+      </form>
+    </section>
+
+    <section class="section issues-section" id="issues">
+      <div class="section-heading issues-heading">
+        <div><div class="eyebrow">THE NEIGHBORHOOD BOARD</div><h2>Community reports</h2><p>Browse the sample reports or add one of your own above.</p></div>
+        <div class="filters">
+          <label class="sr-only" for="filterCategory">Filter by category</label>
+          <select id="filterCategory"><option value="all">All categories</option><option>Pothole / road damage</option><option>Flooding / drainage</option><option>Tree / sidewalk</option><option>Streetlight / sign</option><option>Other</option></select>
+          <label class="sr-only" for="filterStatus">Filter by status</label>
+          <select id="filterStatus"><option value="all">All statuses</option><option>New</option><option>Under review</option><option>Resolved</option></select>
+        </div>
+      </div>
+      <div class="issue-grid" id="issueGrid"></div>
+      <div class="empty-state" id="emptyState" hidden><span>⌕</span><h3>No reports match those filters</h3><p>Try another category or status.</p></div>
+      <p class="demo-disclaimer">Reports on this page are community-submitted demo content and are not verified or sent to the City of Fishers.</p>
+    </section>
+
+    <section class="how-section" id="how">
+      <div class="section section-inner">
+        <div class="eyebrow">SIMPLE. LOCAL. ACTIONABLE.</div><h2>Good things happen when<br><span>we speak up.</span></h2>
+        <div class="steps">
+          <article><span class="step-number">01</span><div class="step-icon">⌖</div><h3>Spot an issue</h3><p>Notice something in a public place that could use attention? Take note of the location.</p></article>
+          <article><span class="step-number">02</span><div class="step-icon">＋</div><h3>Share a report</h3><p>Choose a category and describe what you saw so others can understand the concern.</p></article>
+          <article><span class="step-number">03</span><div class="step-icon">↗</div><h3>Stay informed</h3><p>Use the community board to follow reports. In this demo, status labels are illustrative.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing-cta" id="about">
+      <div><div class="eyebrow">BETTER STARTS HERE</div><h2>One neighborhood.<br><span>Lots of ways to help.</span></h2><p>FixFishers is a community project concept designed to make local concerns easier to notice and organize.</p></div>
+      <a class="button button-dark" href="#report">Share what you noticed <span>↗</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand" href="#home"><span class="brand-mark">F<span>+</span></span><span>Fix<span class="brand-light">Fishers</span></span></a>
+    <p>A community project prototype · Not affiliated with the City of Fishers.</p>
+    <a href="#home" class="back-top">Back to top ↑</a>
+  </footer>
+</body>
+</html>
