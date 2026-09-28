@@ -24,6 +24,7 @@
 <body>
 
   <header class="header">
+
     <div class="brand">
       <span class="brand-mark">F+</span>
       <span>Fix<span>Fishers</span></span>
@@ -32,13 +33,19 @@
     <button id="reportButton" class="report-button">
       + Report an issue
     </button>
+
   </header>
+
 
   <main>
 
     <section class="intro">
+
       <div>
-        <p class="eyebrow">COMMUNITY REPAIR</p>
+
+        <p class="eyebrow">
+          COMMUNITY REPAIR
+        </p>
 
         <h1>
           See something that needs fixing?
@@ -49,26 +56,45 @@
           Explore community-reported issues around Fishers and help
           make your neighborhood better.
         </p>
+
       </div>
+
     </section>
+
 
     <section class="map-section">
 
       <div class="map-header">
+
         <div>
-          <h2>Community map</h2>
-          <p>Explore reported issues around Fishers.</p>
+
+          <h2>
+            Community map
+          </h2>
+
+          <p>
+            Explore reported issues around Fishers.
+          </p>
+
         </div>
 
+
         <div class="map-status">
+
           <span></span>
+
           Live map
+
         </div>
+
       </div>
+
 
       <div id="map"></div>
 
+
       <div class="legend">
+
         <div>
           <span class="legend-dot new"></span>
           New
@@ -83,33 +109,58 @@
           <span class="legend-dot resolved"></span>
           Resolved
         </div>
+
       </div>
 
     </section>
 
   </main>
 
-  <!-- REPORT PANEL -->
+
+
+  <!-- =========================================
+       REPORT PANEL
+  ========================================== -->
 
   <div id="reportOverlay" class="report-overlay">
 
     <div class="report-panel">
 
-      <button id="closeReport" class="close-report">
+
+      <!-- CLOSE -->
+
+      <button
+        id="closeReport"
+        class="close-report"
+      >
         ×
       </button>
 
-      <p class="eyebrow">NEW COMMUNITY REPORT</p>
 
-      <h2>What needs fixing?</h2>
+      <!-- HEADER -->
+
+      <p class="eyebrow">
+        NEW COMMUNITY REPORT
+      </p>
+
+      <h2>
+        What needs fixing?
+      </h2>
 
       <p class="report-subtitle">
         Tell Fishers about an issue you've noticed.
       </p>
 
-      <label for="issueType">Issue type</label>
+
+
+      <!-- ISSUE TYPE -->
+
+      <label for="issueType">
+        Issue type
+      </label>
 
       <select id="issueType">
+
         <option value="Pothole / road damage">
           Pothole / road damage
         </option>
@@ -141,7 +192,66 @@
         <option value="Other">
           Other
         </option>
+
       </select>
+
+
+
+      <!-- SEVERITY -->
+
+      <label for="issueSeverity">
+        Severity
+      </label>
+
+      <select id="issueSeverity">
+
+        <option value="Low">
+          Low
+        </option>
+
+        <option
+          value="Medium"
+          selected
+        >
+          Medium
+        </option>
+
+        <option value="High">
+          High
+        </option>
+
+        <option value="Critical">
+          Critical
+        </option>
+
+      </select>
+
+
+
+      <!-- PHOTO -->
+
+      <label for="issueImage">
+        Photo of the issue
+      </label>
+
+      <input
+        type="file"
+        id="issueImage"
+        accept="image/*"
+      >
+
+      <p class="image-help">
+        Upload a photo showing the repair that is needed.
+      </p>
+
+      <div
+        id="imagePreview"
+        class="image-preview"
+      ></div>
+
+
+
+      <!-- DESCRIPTION -->
 
       <label for="issueDescription">
         Description
@@ -153,17 +263,35 @@
         rows="4"
       ></textarea>
 
-      <button id="chooseLocation" class="location-button">
+
+
+      <!-- LOCATION -->
+
+      <button
+        id="chooseLocation"
+        class="location-button"
+      >
         📍 Choose location on map
       </button>
 
-      <p id="locationStatus" class="location-status">
+      <p
+        id="locationStatus"
+        class="location-status"
+      >
         Location not selected
       </p>
 
-      <button id="submitReport" class="submit-report">
+
+
+      <!-- SUBMIT -->
+
+      <button
+        id="submitReport"
+        class="submit-report"
+      >
         Submit report →
       </button>
+
 
     </div>
 

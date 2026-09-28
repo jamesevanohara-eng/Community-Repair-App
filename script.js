@@ -12,9 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // ==============================
+
+  // =====================================================
   // FISHERS MAP
-  // ==============================
+  // =====================================================
 
   const fishersCenter = [39.9568, -85.9948];
 
@@ -32,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     maxBoundsViscosity: 1.0
   });
 
+
   L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
@@ -42,82 +44,253 @@ document.addEventListener("DOMContentLoaded", () => {
   ).addTo(map);
 
 
-  // ==============================
-  // REPORT DATA
-  // ==============================
+  // =====================================================
+  // REPAIR TYPE COLORS
+  // =====================================================
+
+  const repairColors = {
+
+    "Pothole / road damage": "#3f78a8",
+
+    "Broken streetlight": "#8067a8",
+
+    "Flooding / drainage": "#3d8f9b",
+
+    "Fallen tree": "#4f8055",
+
+    "Damaged sidewalk": "#916b4b",
+
+    "Broken sign": "#8b718f",
+
+    "Park issue": "#b68b35",
+
+    "Other": "#69736b"
+
+  };
+
+
+  // =====================================================
+  // SEVERITY COLORS
+  // =====================================================
+
+  const severityColors = {
+
+    "Low": "#5c8c61",
+
+    "Medium": "#d0a52b",
+
+    "High": "#d47732",
+
+    "Critical": "#b9433d"
+
+  };
+
+
+  // =====================================================
+  // DEMO REPORTS
+  // =====================================================
 
   const reports = [
 
     {
       location: [39.9568, -85.9948],
-      title: "Road damage",
+
+      title: "Large pothole",
+
       category: "Pothole / road damage",
-      description: "Demo community report.",
+
+      description:
+        "Large pothole causing vehicles to swerve into the opposite lane.",
+
+      severity: "High",
+
+      image:
+        "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=80",
+
       status: "New"
     },
 
+
     {
       location: [39.9675, -85.9942],
+
       title: "Drainage concern",
+
       category: "Flooding / drainage",
-      description: "Demo community report.",
+
+      description:
+        "Water collects along the side of the road after heavy rain.",
+
+      severity: "Medium",
+
+      image:
+        "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=900&q=80",
+
       status: "Under review"
     },
 
+
     {
       location: [39.9492, -86.0235],
-      title: "Sidewalk issue",
+
+      title: "Damaged sidewalk",
+
       category: "Damaged sidewalk",
-      description: "Demo community report.",
+
+      description:
+        "Raised section of sidewalk creating a tripping hazard.",
+
+      severity: "Medium",
+
+      image:
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80",
+
       status: "Resolved"
+    },
+
+
+    {
+      location: [39.9720, -86.0020],
+
+      title: "Fallen tree",
+
+      category: "Fallen tree",
+
+      description:
+        "Tree has fallen across part of a neighborhood path.",
+
+      severity: "Critical",
+
+      image:
+        "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=900&q=80",
+
+      status: "New"
     }
 
   ];
 
 
-  // ==============================
-  // MARKER FUNCTION
-  // ==============================
+  // =====================================================
+  // CREATE MARKER
+  // =====================================================
 
   function addReportMarker(report) {
 
+    const typeColor =
+      repairColors[report.category] || repairColors["Other"];
+
+    const severityColor =
+      severityColors[report.severity] ||
+      severityColors["Medium"];
+
+
     const icon = L.divIcon({
 
-      className: "",
+      className: "fixfishers-marker-wrapper",
 
       html: `
-        <div class="custom-marker">
+        <div
+          class="custom-marker"
+          style="
+            --marker-color: ${typeColor};
+            --severity-color: ${severityColor};
+          "
+        >
+
+          <div class="marker-severity"></div>
+
           <span>!</span>
+
         </div>
       `,
 
-      iconSize: [38, 38],
-      iconAnchor: [19, 38],
-      popupAnchor: [0, -35]
+      iconSize: [42, 42],
+
+      iconAnchor: [21, 42],
+
+      popupAnchor: [0, -39]
 
     });
 
 
-    const marker = L.marker(report.location, {
-      icon: icon
-    }).addTo(map);
+    const marker = L.marker(
+      report.location,
+      {
+        icon: icon
+      }
+    ).addTo(map);
 
+
+    // =================================================
+    // IMAGE
+    // =================================================
+
+    const imageHTML = report.image
+
+      ? `
+        <img
+          class="popup-image"
+          src="${report.image}"
+          alt="Photo of reported ${report.category}"
+        >
+      `
+
+      : `
+        <div class="popup-no-image">
+          No photo uploaded
+        </div>
+      `;
+
+
+    // =================================================
+    // POPUP
+    // =================================================
 
     marker.bindPopup(`
 
       <div class="map-popup">
 
-        <strong>${report.category}</strong>
+        ${imageHTML}
 
-        <h3>${report.title}</h3>
+        <div class="popup-content">
 
-        <p>
-          ${report.description}
-        </p>
+          <div class="popup-topline">
 
-        <span class="map-popup-status">
-          ${report.status}
-        </span>
+            <span
+              class="popup-category"
+              style="color: ${typeColor}"
+            >
+              ${report.category}
+            </span>
+
+            <span
+              class="popup-severity"
+              style="
+                background: ${severityColor};
+              "
+            >
+              ${report.severity}
+            </span>
+
+          </div>
+
+          <h3>
+            ${report.title}
+          </h3>
+
+          <p>
+            ${report.description}
+          </p>
+
+          <div class="popup-footer">
+
+            <span class="map-popup-status">
+              ${report.status}
+            </span>
+
+          </div>
+
+        </div>
 
       </div>
 
@@ -126,13 +299,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  // Add existing reports
+  // Add demo reports
   reports.forEach(addReportMarker);
 
 
-  // ==============================
+  // =====================================================
   // REPORT UI
-  // ==============================
+  // =====================================================
 
   const reportButton =
     document.getElementById("reportButton");
@@ -152,8 +325,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const issueType =
     document.getElementById("issueType");
 
+  const issueSeverity =
+    document.getElementById("issueSeverity");
+
   const issueDescription =
     document.getElementById("issueDescription");
+
+  const issueImage =
+    document.getElementById("issueImage");
+
+  const imagePreview =
+    document.getElementById("imagePreview");
 
   const locationStatus =
     document.getElementById("locationStatus");
@@ -161,10 +343,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedLocation = null;
 
+  let selectedImage = null;
 
-  // ==============================
-  // OPEN REPORT PANEL
-  // ==============================
+
+  // =====================================================
+  // OPEN REPORT
+  // =====================================================
 
   reportButton.addEventListener("click", () => {
 
@@ -173,9 +357,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  // ==============================
-  // CLOSE REPORT PANEL
-  // ==============================
+  // =====================================================
+  // CLOSE REPORT
+  // =====================================================
 
   closeReport.addEventListener("click", () => {
 
@@ -184,7 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  // Clicking outside panel closes it
   reportOverlay.addEventListener("click", (event) => {
 
     if (event.target === reportOverlay) {
@@ -196,9 +379,89 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  // ==============================
-  // CHOOSE MAP LOCATION
-  // ==============================
+  // =====================================================
+  // IMAGE UPLOAD
+  // =====================================================
+
+  issueImage.addEventListener("change", () => {
+
+    const file = issueImage.files[0];
+
+    if (!file) {
+
+      selectedImage = null;
+
+      imagePreview.innerHTML = "";
+
+      return;
+
+    }
+
+
+    if (!file.type.startsWith("image/")) {
+
+      alert("Please select an image file.");
+
+      issueImage.value = "";
+
+      return;
+
+    }
+
+
+    const reader = new FileReader();
+
+
+    reader.onload = (event) => {
+
+      selectedImage = event.target.result;
+
+
+      imagePreview.innerHTML = `
+
+        <div class="preview-wrapper">
+
+          <img
+            src="${selectedImage}"
+            alt="Selected repair"
+          >
+
+          <button
+            type="button"
+            id="removeImage"
+            class="remove-image"
+          >
+            Remove photo
+          </button>
+
+        </div>
+
+      `;
+
+
+      document
+        .getElementById("removeImage")
+        .addEventListener("click", () => {
+
+          selectedImage = null;
+
+          issueImage.value = "";
+
+          imagePreview.innerHTML = "";
+
+        });
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+  });
+
+
+  // =====================================================
+  // CHOOSE LOCATION
+  // =====================================================
 
   chooseLocation.addEventListener("click", () => {
 
@@ -209,14 +472,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     locationStatus.classList.add("waiting");
 
-    map.getContainer().classList.add("selecting-location");
+    map.getContainer()
+      .classList.add("selecting-location");
 
   });
 
 
-  // ==============================
+  // =====================================================
   // MAP CLICK
-  // ==============================
+  // =====================================================
 
   map.on("click", (event) => {
 
@@ -245,10 +509,11 @@ document.addEventListener("DOMContentLoaded", () => {
     reportOverlay.classList.add("active");
 
 
-    // Temporary selection marker
     if (window.selectionMarker) {
 
-      map.removeLayer(window.selectionMarker);
+      map.removeLayer(
+        window.selectionMarker
+      );
 
     }
 
@@ -257,20 +522,22 @@ document.addEventListener("DOMContentLoaded", () => {
       L.marker(event.latlng).addTo(map);
 
 
-    window.selectionMarker.bindPopup(
-      "Your report location"
-    ).openPopup();
+    window.selectionMarker
+      .bindPopup("Your report location")
+      .openPopup();
 
   });
 
 
-  // ==============================
+  // =====================================================
   // SUBMIT REPORT
-  // ==============================
+  // =====================================================
 
   submitReport.addEventListener("click", () => {
 
     const type = issueType.value;
+
+    const severity = issueSeverity.value;
 
     const description =
       issueDescription.value.trim();
@@ -311,16 +578,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       description: description,
 
+      severity: severity,
+
+      image: selectedImage,
+
       status: "New"
 
     };
 
 
-    // Add report to map
+    // Add the new colored marker
     addReportMarker(newReport);
 
 
-    // Remove temporary marker
+    // Remove temporary location marker
+
     if (window.selectionMarker) {
 
       map.removeLayer(
@@ -333,7 +605,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // Reset form
+
     issueDescription.value = "";
+
+    issueImage.value = "";
+
+    imagePreview.innerHTML = "";
+
+    selectedImage = null;
 
     selectedLocation = null;
 
@@ -342,11 +621,13 @@ document.addEventListener("DOMContentLoaded", () => {
       "Location not selected";
 
 
-    // Close panel
+    // Close modal
+
     reportOverlay.classList.remove("active");
 
 
     // Zoom to new report
+
     map.setView(
       [
         newReport.location[0],
@@ -356,29 +637,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
-    // Open newest marker
-    setTimeout(() => {
-
-      map.eachLayer((layer) => {
-
-        if (
-          layer instanceof L.Marker &&
-          layer.getLatLng &&
-          layer.getLatLng().lat ===
-            newReport.location[0] &&
-          layer.getLatLng().lng ===
-            newReport.location[1]
-        ) {
-
-          layer.openPopup();
-
-        }
-
-      });
-
-    }, 300);
-
-
     alert(
       "Your report has been added to the FixFishers map!"
     );
@@ -386,9 +644,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  // ==============================
-  // MAP FIX
-  // ==============================
+  // =====================================================
+  // MAP SIZE
+  // =====================================================
 
   setTimeout(() => {
 
