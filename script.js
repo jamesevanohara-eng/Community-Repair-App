@@ -2,47 +2,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const mapElement = document.getElementById("map");
 
   if (!mapElement) {
-    console.error("FixFishers: #map element was not found.");
+    console.error("FixFishers: #map was not found.");
     return;
   }
 
   if (typeof L === "undefined") {
-    mapElement.innerHTML = `
-      <div style="
-        height:100%;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        padding:30px;
-        text-align:center;
-        background:#0d1c14;
-        color:#a7f36b;
-        font-family:monospace;
-      ">
-        <div>
-          <strong>MAP ENGINE FAILED TO LOAD</strong>
-          <p style="color:#91a399">
-            Leaflet could not be loaded.
-            Check your internet connection and the
-            Leaflet links in index.html.
-          </p>
-        </div>
-      </div>
-    `;
-
-    console.error(
-      "FixFishers: Leaflet (L) is undefined."
-    );
-
+    console.error("FixFishers: Leaflet failed to load.");
     return;
   }
 
-  const fishers = [39.9568, -85.9948];
+  // Fishers, Indiana
+  const fishersCenter = [39.9568, -85.9948];
+
+  // Approximate Fishers city boundary
+  const fishersBounds = L.latLngBounds(
+    [39.900, -86.080], // Southwest
+    [40.010, -85.930]  // Northeast
+  );
 
   const map = L.map("map", {
-    zoomControl: true,
-    scrollWheelZoom: true
-  }).setView(fishers, 13);
+    center: fishersCenter,
+    zoom: 13,
+    minZoom: 12,
+    maxZoom: 17,
+
+    // Prevent dragging outside Fishers
+    maxBounds: fishersBounds,
+    maxBoundsViscosity: 1.0
+  });
 
   L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -53,47 +40,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   ).addTo(map);
 
-
-  /*
-   * Demo reports
-   */
-
+  // Demo community reports
   const reports = [
     {
       location: [39.9568, -85.9948],
       title: "Road damage",
       category: "Pothole / road damage",
-      description:
-        "Demo community report near Fishers.",
+      description: "Demo community report.",
       status: "New"
     },
-
     {
       location: [39.9675, -85.9942],
       title: "Drainage concern",
       category: "Flooding / drainage",
-      description:
-        "Demo community report.",
+      description: "Demo community report.",
       status: "Under review"
     },
-
     {
       location: [39.9492, -86.0235],
       title: "Sidewalk issue",
       category: "Tree / sidewalk",
-      description:
-        "Demo community report.",
+      description: "Demo community report.",
       status: "Resolved"
     }
   ];
 
-
-  /*
-   * Custom FixFishers marker
-   */
-
   reports.forEach((report) => {
-
     const icon = L.divIcon({
       className: "",
       html: `
@@ -106,38 +78,23 @@ document.addEventListener("DOMContentLoaded", () => {
       popupAnchor: [0, -35]
     });
 
-    const marker = L.marker(
-      report.location,
-      { icon }
-    ).addTo(map);
+    const marker = L.marker(report.location, {
+      icon: icon
+    }).addTo(map);
 
     marker.bindPopup(`
       <div class="map-popup">
-
         <strong>${report.category}</strong>
-
         <h3>${report.title}</h3>
-
-        <p>
-          ${report.description}
-        </p>
-
+        <p>${report.description}</p>
         <span class="map-popup-status">
           ${report.status}
         </span>
-
       </div>
     `);
   });
 
-
-  /*
-   * Fix Leaflet rendering when
-   * the map becomes visible.
-   */
-
   setTimeout(() => {
     map.invalidateSize();
   }, 500);
-
 });
