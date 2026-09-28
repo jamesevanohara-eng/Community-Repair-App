@@ -635,3 +635,290 @@ h1 span {
     letter-spacing: -2px;
   }
 }
+/* =========================================
+   REPORT PANEL
+========================================= */
+
+.report-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(2, 8, 5, 0.78);
+
+  backdrop-filter: blur(12px);
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+
+.report-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+.report-panel {
+  position: relative;
+
+  width: min(520px, calc(100% - 32px));
+
+  padding: 36px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16, 31, 22, 0.98),
+      rgba(6, 15, 10, 0.98)
+    );
+
+  border: 1px solid rgba(167, 243, 107, 0.2);
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.65),
+    0 0 60px rgba(167, 243, 107, 0.08);
+
+  transform: translateY(20px) scale(0.97);
+
+  transition:
+    transform 0.3s ease;
+}
+
+.report-overlay.active .report-panel {
+  transform: translateY(0) scale(1);
+}
+
+
+.close-report {
+  position: absolute;
+
+  top: 16px;
+  right: 18px;
+
+  width: 36px;
+  height: 36px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.05);
+
+  color: #91a399;
+
+  font-size: 25px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.close-report:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  transform: rotate(90deg);
+}
+
+
+.report-panel h2 {
+  margin: 8px 0;
+
+  font-size: 32px;
+
+  letter-spacing: -1px;
+}
+
+.report-subtitle {
+  margin-bottom: 28px;
+
+  color: #91a399;
+}
+
+
+.report-panel label {
+  display: block;
+
+  margin: 18px 0 8px;
+
+  color: #c9d6ce;
+
+  font-size: 13px;
+
+  font-family: "JetBrains Mono", monospace;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.08em;
+}
+
+
+.report-panel select,
+.report-panel textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(255,255,255,0.1);
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.04);
+
+  color: white;
+
+  padding: 14px;
+
+  outline: none;
+
+  font: inherit;
+
+  transition: 0.2s ease;
+}
+
+
+.report-panel select:focus,
+.report-panel textarea:focus {
+  border-color: #a7f36b;
+
+  box-shadow:
+    0 0 0 3px rgba(167,243,107,0.08);
+}
+
+
+.report-panel select option {
+  background: #0b1710;
+  color: white;
+}
+
+
+.report-panel textarea {
+  resize: vertical;
+
+  min-height: 110px;
+}
+
+
+.location-button,
+.submit-report {
+  width: 100%;
+
+  margin-top: 16px;
+
+  padding: 15px;
+
+  border-radius: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.location-button {
+  background: rgba(167,243,107,0.08);
+
+  border: 1px solid rgba(167,243,107,0.3);
+
+  color: #a7f36b;
+}
+
+
+.location-button:hover {
+  background: rgba(167,243,107,0.15);
+
+  transform: translateY(-2px);
+}
+
+
+.submit-report {
+  border: none;
+
+  background: #a7f36b;
+
+  color: #07100c;
+
+  box-shadow:
+    0 8px 30px rgba(167,243,107,0.15);
+}
+
+
+.submit-report:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 40px rgba(167,243,107,0.25);
+}
+
+
+.location-status {
+  margin: 10px 0;
+
+  color: #66776d;
+
+  font-family: "JetBrains Mono", monospace;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+.location-status.waiting {
+  color: #a7f36b;
+
+  animation: statusBlink 1.2s infinite;
+}
+
+
+/* =========================================
+   MAP LOCATION SELECTION
+========================================= */
+
+#map.selecting-location {
+  cursor: crosshair;
+}
+
+#map.selecting-location::after {
+  content: "CLICK THE MAP TO PLACE YOUR REPORT";
+
+  position: absolute;
+
+  top: 20px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  z-index: 1000;
+
+  pointer-events: none;
+
+  padding: 10px 16px;
+
+  border-radius: 999px;
+
+  background: rgba(7,16,12,0.94);
+
+  border: 1px solid rgba(167,243,107,0.4);
+
+  color: #a7f36b;
+
+  font-family: "JetBrains Mono", monospace;
+
+  font-size: 11px;
+
+  letter-spacing: 0.08em;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35);
+}
