@@ -109,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       status: "New",
 
-      // NEW SIDEBAR
       address: "Downtown Fishers",
 
       postedAt: "September 28, 2026"
@@ -133,7 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       status: "Under review",
 
-      // NEW SIDEBAR
       address: "116th Street area",
 
       postedAt: "September 27, 2026"
@@ -157,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       status: "Resolved",
 
-      // NEW SIDEBAR
       address: "Southeast Fishers",
 
       postedAt: "September 25, 2026"
@@ -181,7 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       status: "New",
 
-      // NEW SIDEBAR
       address: "North Fishers",
 
       postedAt: "September 29, 2026"
@@ -191,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
-  // NEW SIDEBAR REFERENCES
+  // SIDEBAR REFERENCES
   // =====================================================
 
   const issueList =
@@ -207,12 +203,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("severityFilter");
 
 
-  // Keep track of markers so sidebar cards can control them
   const markers = [];
 
 
   // =====================================================
-  // NEW SIDEBAR — RENDER ISSUES
+  // RENDER ISSUES
   // =====================================================
 
   function renderIssues() {
@@ -327,7 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="issue-meta-row">
                 <span>📍</span>
                 <span>
-                  ${report.address || "Fishers, Indiana"}
+                  ${report.address || "Address unavailable"}
                 </span>
               </div>
 
@@ -370,22 +365,17 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
 
-          // Center map on report
           map.setView(
             report.location,
             15
           );
 
 
-          // Open corresponding popup
           if (markers[index]) {
-
             markers[index].openPopup();
-
           }
 
 
-          // Highlight card
           document
             .querySelectorAll(".issue-card")
             .forEach((otherCard) => {
@@ -454,15 +444,14 @@ document.addEventListener("DOMContentLoaded", () => {
     ).addTo(map);
 
 
-    // NEW SIDEBAR
-    // Save marker so sidebar cards can open it
-    const markerIndex = reports.indexOf(report);
+    const markerIndex =
+      reports.indexOf(report);
 
     markers[markerIndex] = marker;
 
 
     // =================================================
-    // IMAGE
+    // POPUP IMAGE
     // =================================================
 
     const imageHTML = report.image
@@ -505,9 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <span
               class="popup-severity"
-              style="
-                background: ${severityColor};
-              "
+              style="background: ${severityColor};"
             >
               ${report.severity}
             </span>
@@ -522,10 +509,8 @@ document.addEventListener("DOMContentLoaded", () => {
             ${report.description}
           </p>
 
-          <!-- NEW SIDEBAR INFO -->
-
           <div class="popup-address">
-            📍 ${report.address || "Fishers, Indiana"}
+            📍 ${report.address || "Address unavailable"}
           </div>
 
           <div class="popup-date">
@@ -548,7 +533,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // =================================================
-    // MARKER CLICK → HIGHLIGHT SIDEBAR
+    // MARKER CLICK
     // =================================================
 
     marker.on("click", () => {
@@ -556,6 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!issueList) {
         return;
       }
+
 
       document
         .querySelectorAll(".issue-card")
@@ -588,23 +574,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  // Add demo reports
+  // =====================================================
+  // ADD DEMO REPORTS
+  // =====================================================
+
   reports.forEach(addReportMarker);
 
-
-  // NEW SIDEBAR
-  // Render sidebar after all demo markers exist
   renderIssues();
 
 
-  // NEW SIDEBAR
-  // Filters
+  // =====================================================
+  // FILTERS
+  // =====================================================
+
   if (typeFilter) {
 
     typeFilter.addEventListener("change", () => {
-
       renderIssues();
-
     });
 
   }
@@ -613,9 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (severityFilter) {
 
     severityFilter.addEventListener("change", () => {
-
       renderIssues();
-
     });
 
   }
@@ -663,6 +647,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedImage = null;
 
+  let selectedAddress = null;
+
 
   // =====================================================
   // OPEN REPORT
@@ -703,7 +689,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   issueImage.addEventListener("change", () => {
 
-    const file = issueImage.files[0];
+    const file =
+      issueImage.files[0];
 
     if (!file) {
 
@@ -727,12 +714,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    const reader = new FileReader();
+    const reader =
+      new FileReader();
 
 
     reader.onload = (event) => {
 
-      selectedImage = event.target.result;
+      selectedImage =
+        event.target.result;
 
 
       imagePreview.innerHTML = `
@@ -797,36 +786,276 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
+  // ADDRESS CLEANER
+  // =====================================================
+
+  function cleanAddress(address) {
+
+    if (!address) {
+      return null;
+    }
+
+
+    let cleaned =
+      address.trim();
+
+
+    // Remove USA
+    cleaned =
+      cleaned.replace(
+        /,\s*USA$/i,
+        ""
+      );
+
+
+    // Normalize Indiana
+    cleaned =
+      cleaned.replace(
+        /,\s*Indiana\b/i,
+        ", IN"
+      );
+
+
+    return cleaned;
+
+  }
+
+
+  // =====================================================
+  // ARC GIS REVERSE GEOCODING
+  // =====================================================
+
+  async function getRealAddress(lat, lng) {
+
+    try {
+
+      const url =
+        `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode` +
+        `?location=${lng},${lat}` +
+        `&f=json` +
+        `&distance=500` +
+        `&outSR=4326`;
+
+
+      const response =
+        await fetch(url);
+
+
+      if (!response.ok) {
+        throw new Error(
+          "ArcGIS request failed."
+        );
+      }
+
+
+      const data =
+        await response.json();
+
+
+      if (
+        !data ||
+        !data.address
+      ) {
+
+        return null;
+
+      }
+
+
+      const address =
+        data.address;
+
+
+      // =================================================
+      // OPTION 1:
+      // COMPLETE ARCGIS ADDRESS
+      // =================================================
+
+      if (
+        address.LongLabel &&
+        address.LongLabel.trim()
+      ) {
+
+        const cleaned =
+          cleanAddress(
+            address.LongLabel
+          );
+
+
+        if (cleaned) {
+          return cleaned;
+        }
+
+      }
+
+
+      // =================================================
+      // OPTION 2:
+      // STREET ADDRESS
+      // =================================================
+
+      if (
+        address.Address &&
+        address.City
+      ) {
+
+        let result =
+          address.Address;
+
+
+        result +=
+          `, ${address.City}`;
+
+
+        if (address.RegionAbbr) {
+
+          result +=
+            `, ${address.RegionAbbr}`;
+
+        }
+
+
+        if (address.Postal) {
+
+          result +=
+            ` ${address.Postal}`;
+
+        }
+
+
+        return cleanAddress(result);
+
+      }
+
+
+      // =================================================
+      // OPTION 3:
+      // PLACE NAME
+      // =================================================
+
+      if (
+        address.PlaceName &&
+        address.City
+      ) {
+
+        let result =
+          address.PlaceName;
+
+
+        result +=
+          `, ${address.City}`;
+
+
+        if (address.RegionAbbr) {
+
+          result +=
+            `, ${address.RegionAbbr}`;
+
+        }
+
+
+        if (address.Postal) {
+
+          result +=
+            ` ${address.Postal}`;
+
+        }
+
+
+        return cleanAddress(result);
+
+      }
+
+
+      // =================================================
+      // OPTION 4:
+      // NEAREST STREET
+      // =================================================
+
+      if (
+        address.StAddr &&
+        address.City
+      ) {
+
+        let result =
+          address.StAddr;
+
+
+        result +=
+          `, ${address.City}`;
+
+
+        if (address.RegionAbbr) {
+
+          result +=
+            `, ${address.RegionAbbr}`;
+
+        }
+
+
+        if (address.Postal) {
+
+          result +=
+            ` ${address.Postal}`;
+
+        }
+
+
+        return cleanAddress(result);
+
+      }
+
+
+      return null;
+
+    } catch (error) {
+
+      console.error(
+        "FixFishers: Reverse geocoding failed:",
+        error
+      );
+
+      return null;
+
+    }
+
+  }
+
+
+  // =====================================================
   // MAP CLICK
   // =====================================================
 
-  map.on("click", (event) => {
+  map.on("click", async (event) => {
 
     if (
       !map.getContainer()
         .classList.contains("selecting-location")
     ) {
+
       return;
+
     }
 
 
-    selectedLocation = event.latlng;
+    selectedLocation =
+      event.latlng;
+
+    selectedAddress = null;
 
 
     map.getContainer()
       .classList.remove("selecting-location");
 
 
+    // Loading state
     locationStatus.textContent =
-      `Location selected: ${event.latlng.lat.toFixed(5)}, ${event.latlng.lng.toFixed(5)}`;
+      "Finding nearest real address...";
+
+    locationStatus.classList.add("waiting");
 
 
-    locationStatus.classList.remove("waiting");
-
-
-    reportOverlay.classList.add("active");
-
-
+    // Remove old temporary marker
     if (window.selectionMarker) {
 
       map.removeLayer(
@@ -836,13 +1065,71 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    // Create temporary marker
     window.selectionMarker =
-      L.marker(event.latlng).addTo(map);
+      L.marker(event.latlng)
+        .addTo(map);
 
 
     window.selectionMarker
-      .bindPopup("Your report location")
+      .bindPopup(
+        "Finding address..."
+      )
       .openPopup();
+
+
+    // Open report form
+    reportOverlay.classList.add("active");
+
+
+    // =================================================
+    // FIND REAL ADDRESS
+    // =================================================
+
+    const address =
+      await getRealAddress(
+        event.latlng.lat,
+        event.latlng.lng
+      );
+
+
+    if (address) {
+
+      selectedAddress =
+        address;
+
+
+      locationStatus.textContent =
+        `📍 ${address}`;
+
+    } else {
+
+      // NEVER display coordinates.
+      selectedAddress =
+        "Address unavailable";
+
+
+      locationStatus.textContent =
+        "📍 Address unavailable";
+
+    }
+
+
+    locationStatus.classList.remove(
+      "waiting"
+    );
+
+
+    // Update temporary popup
+    if (window.selectionMarker) {
+
+      window.selectionMarker
+        .bindPopup(
+          `<strong>Report location</strong><br>${selectedAddress}`
+        )
+        .openPopup();
+
+    }
 
   });
 
@@ -853,9 +1140,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   submitReport.addEventListener("click", () => {
 
-    const type = issueType.value;
+    const type =
+      issueType.value;
 
-    const severity = issueSeverity.value;
+    const severity =
+      issueSeverity.value;
 
     const description =
       issueDescription.value.trim();
@@ -902,9 +1191,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       status: "New",
 
-      // NEW SIDEBAR
       address:
-        `Fishers, Indiana — ${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)}`,
+        selectedAddress ||
+        "Address unavailable",
 
       postedAt:
         new Date().toLocaleString()
@@ -912,35 +1201,32 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
 
-    // NEW SIDEBAR
-    // Add report to the reports array
+    // Add report
     reports.push(newReport);
 
 
-    // Add the new colored marker
+    // Add marker
     addReportMarker(newReport);
 
 
-    // NEW SIDEBAR
-    // Refresh issue list
+    // Refresh sidebar
     renderIssues();
 
 
-    // Remove temporary location marker
-
+    // Remove temporary marker
     if (window.selectionMarker) {
 
       map.removeLayer(
         window.selectionMarker
       );
 
-      window.selectionMarker = null;
+      window.selectionMarker =
+        null;
 
     }
 
 
     // Reset form
-
     issueDescription.value = "";
 
     issueImage.value = "";
@@ -951,18 +1237,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     selectedLocation = null;
 
+    selectedAddress = null;
+
 
     locationStatus.textContent =
       "Location not selected";
 
 
     // Close modal
+    reportOverlay.classList.remove(
+      "active"
+    );
 
-    reportOverlay.classList.remove("active");
 
-
-    // Zoom to new report
-
+    // Zoom to report
     map.setView(
       [
         newReport.location[0],
@@ -970,6 +1258,18 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
       15
     );
+
+
+    // Open popup
+    const newMarker =
+      markers[reports.length - 1];
+
+
+    if (newMarker) {
+
+      newMarker.openPopup();
+
+    }
 
 
     alert(
