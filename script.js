@@ -94,92 +94,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
     {
       location: [39.9568, -85.9948],
-
       title: "Large pothole",
-
       category: "Pothole / road damage",
-
       description:
         "Large pothole causing vehicles to swerve into the opposite lane.",
-
       severity: "High",
-
       image:
         "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=80",
-
       status: "New",
-
       address: "Downtown Fishers",
-
       postedAt: "September 28, 2026"
     },
 
 
     {
       location: [39.9675, -85.9942],
-
       title: "Drainage concern",
-
       category: "Flooding / drainage",
-
       description:
         "Water collects along the side of the road after heavy rain.",
-
       severity: "Medium",
-
       image:
         "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=900&q=80",
-
       status: "Under review",
-
       address: "116th Street area",
-
       postedAt: "September 27, 2026"
     },
 
 
     {
       location: [39.9492, -86.0235],
-
       title: "Damaged sidewalk",
-
       category: "Damaged sidewalk",
-
       description:
         "Raised section of sidewalk creating a tripping hazard.",
-
       severity: "Medium",
-
       image:
         "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80",
-
       status: "Resolved",
-
       address: "Southeast Fishers",
-
       postedAt: "September 25, 2026"
     },
 
 
     {
       location: [39.9720, -86.0020],
-
       title: "Fallen tree",
-
       category: "Fallen tree",
-
       description:
         "Tree has fallen across part of a neighborhood path.",
-
       severity: "Critical",
-
       image:
         "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=900&q=80",
-
       status: "New",
-
       address: "North Fishers",
-
       postedAt: "September 29, 2026"
     }
 
@@ -216,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+
     const selectedType =
       typeFilter ? typeFilter.value : "all";
 
@@ -223,19 +192,20 @@ document.addEventListener("DOMContentLoaded", () => {
       severityFilter ? severityFilter.value : "all";
 
 
-    const filteredReports = reports.filter((report) => {
+    const filteredReports =
+      reports.filter((report) => {
 
-      const typeMatches =
-        selectedType === "all" ||
-        report.category === selectedType;
+        const typeMatches =
+          selectedType === "all" ||
+          report.category === selectedType;
 
-      const severityMatches =
-        selectedSeverity === "all" ||
-        report.severity === selectedSeverity;
+        const severityMatches =
+          selectedSeverity === "all" ||
+          report.severity === selectedSeverity;
 
-      return typeMatches && severityMatches;
+        return typeMatches && severityMatches;
 
-    });
+      });
 
 
     if (issueCount) {
@@ -256,92 +226,97 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    issueList.innerHTML = filteredReports.map((report) => {
+    issueList.innerHTML =
+      filteredReports.map((report) => {
 
-      const severityClass =
-        report.severity.toLowerCase();
+        const severityClass =
+          report.severity.toLowerCase();
 
 
-      const imageHTML = report.image
+        const imageHTML =
+          report.image
 
-        ? `
-          <img
-            class="issue-card-image"
-            src="${report.image}"
-            alt="Photo of ${report.title}"
+            ? `
+              <img
+                class="issue-card-image"
+                src="${report.image}"
+                alt="Photo of ${report.title}"
+              >
+            `
+
+            : "";
+
+
+        return `
+
+          <div
+            class="issue-card"
+            data-report-index="${reports.indexOf(report)}"
           >
-        `
 
-        : "";
+            ${imageHTML}
 
+            <div class="issue-card-content">
 
-      return `
+              <div class="issue-card-top">
 
-        <div
-          class="issue-card"
-          data-report-index="${reports.indexOf(report)}"
-        >
+                <div>
 
-          ${imageHTML}
+                  <h4 class="issue-card-title">
+                    ${report.title}
+                  </h4>
 
-          <div class="issue-card-content">
+                  <div
+                    class="issue-type"
+                    style="color: ${
+                      repairColors[report.category] ||
+                      repairColors["Other"]
+                    }"
+                  >
+                    ${report.category}
+                  </div>
 
-            <div class="issue-card-top">
-
-              <div>
-
-                <h4 class="issue-card-title">
-                  ${report.title}
-                </h4>
-
-                <div
-                  class="issue-type"
-                  style="color: ${repairColors[report.category] || repairColors["Other"]}"
-                >
-                  ${report.category}
                 </div>
 
+                <span
+                  class="severity-badge severity-${severityClass}"
+                >
+                  ${report.severity}
+                </span>
+
               </div>
 
-              <span
-                class="severity-badge severity-${severityClass}"
-              >
-                ${report.severity}
-              </span>
 
-            </div>
+              <p class="issue-description">
+                ${report.description}
+              </p>
 
 
-            <p class="issue-description">
-              ${report.description}
-            </p>
+              <div class="issue-meta">
 
+                <div class="issue-meta-row">
+                  <span>📍</span>
+                  <span>
+                    ${report.address || "Address unavailable"}
+                  </span>
+                </div>
 
-            <div class="issue-meta">
+                <div class="issue-meta-row">
+                  <span>🕒</span>
+                  <span>
+                    ${report.postedAt || "Recently reported"}
+                  </span>
+                </div>
 
-              <div class="issue-meta-row">
-                <span>📍</span>
-                <span>
-                  ${report.address || "Address unavailable"}
-                </span>
-              </div>
-
-              <div class="issue-meta-row">
-                <span>🕒</span>
-                <span>
-                  ${report.postedAt || "Recently reported"}
-                </span>
               </div>
 
             </div>
 
           </div>
 
-        </div>
+        `;
 
-      `;
-
-    }).join("");
+      }).join("");
 
 
     // =================================================
@@ -380,9 +355,12 @@ document.addEventListener("DOMContentLoaded", () => {
             .querySelectorAll(".issue-card")
             .forEach((otherCard) => {
 
-              otherCard.classList.remove("active");
+              otherCard.classList.remove(
+                "active"
+              );
 
             });
+
 
           card.classList.add("active");
 
@@ -400,75 +378,83 @@ document.addEventListener("DOMContentLoaded", () => {
   function addReportMarker(report) {
 
     const typeColor =
-      repairColors[report.category] || repairColors["Other"];
+      repairColors[report.category] ||
+      repairColors["Other"];
+
 
     const severityColor =
       severityColors[report.severity] ||
       severityColors["Medium"];
 
 
-    const icon = L.divIcon({
+    const icon =
+      L.divIcon({
 
-      className: "fixfishers-marker-wrapper",
+        className:
+          "fixfishers-marker-wrapper",
 
-      html: `
-        <div
-          class="custom-marker"
-          style="
-            --marker-color: ${typeColor};
-            --severity-color: ${severityColor};
-          "
-        >
+        html: `
+          <div
+            class="custom-marker"
+            style="
+              --marker-color: ${typeColor};
+              --severity-color: ${severityColor};
+            "
+          >
 
-          <div class="marker-severity"></div>
+            <div class="marker-severity"></div>
 
-          <span>!</span>
+            <span>!</span>
 
-        </div>
-      `,
+          </div>
+        `,
 
-      iconSize: [42, 42],
+        iconSize: [42, 42],
 
-      iconAnchor: [21, 42],
+        iconAnchor: [21, 42],
 
-      popupAnchor: [0, -39]
+        popupAnchor: [0, -39]
 
-    });
+      });
 
 
-    const marker = L.marker(
-      report.location,
-      {
-        icon: icon
-      }
-    ).addTo(map);
+    const marker =
+      L.marker(
+        report.location,
+        {
+          icon: icon
+        }
+      ).addTo(map);
 
 
     const markerIndex =
       reports.indexOf(report);
 
-    markers[markerIndex] = marker;
+
+    markers[markerIndex] =
+      marker;
 
 
     // =================================================
     // POPUP IMAGE
     // =================================================
 
-    const imageHTML = report.image
+    const imageHTML =
+      report.image
 
-      ? `
-        <img
-          class="popup-image"
-          src="${report.image}"
-          alt="Photo of reported ${report.category}"
-        >
-      `
+        ? `
+          <img
+            class="popup-image"
+            src="${report.image}"
+            alt="Photo of reported ${report.category}"
+          >
+        `
 
-      : `
-        <div class="popup-no-image">
-          No photo uploaded
-        </div>
-      `;
+        : `
+          <div class="popup-no-image">
+            No photo uploaded
+          </div>
+        `;
 
 
     // =================================================
@@ -494,7 +480,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <span
               class="popup-severity"
-              style="background: ${severityColor};"
+              style="
+                background: ${severityColor};
+              "
             >
               ${report.severity}
             </span>
@@ -589,18 +577,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (typeFilter) {
 
-    typeFilter.addEventListener("change", () => {
-      renderIssues();
-    });
+    typeFilter.addEventListener(
+      "change",
+      renderIssues
+    );
 
   }
 
 
   if (severityFilter) {
 
-    severityFilter.addEventListener("change", () => {
-      renderIssues();
-    });
+    severityFilter.addEventListener(
+      "change",
+      renderIssues
+    );
 
   }
 
@@ -672,121 +662,152 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  reportOverlay.addEventListener("click", (event) => {
+  reportOverlay.addEventListener(
+    "click",
+    (event) => {
 
-    if (event.target === reportOverlay) {
+      if (
+        event.target === reportOverlay
+      ) {
 
-      reportOverlay.classList.remove("active");
+        reportOverlay.classList.remove(
+          "active"
+        );
+
+      }
 
     }
-
-  });
+  );
 
 
   // =====================================================
   // IMAGE UPLOAD
   // =====================================================
 
-  issueImage.addEventListener("change", () => {
+  issueImage.addEventListener(
+    "change",
+    () => {
 
-    const file =
-      issueImage.files[0];
+      const file =
+        issueImage.files[0];
 
-    if (!file) {
 
-      selectedImage = null;
+      if (!file) {
 
-      imagePreview.innerHTML = "";
+        selectedImage = null;
 
-      return;
+        imagePreview.innerHTML = "";
+
+        return;
+
+      }
+
+
+      if (!file.type.startsWith("image/")) {
+
+        alert(
+          "Please select an image file."
+        );
+
+        issueImage.value = "";
+
+        return;
+
+      }
+
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload =
+        (event) => {
+
+          selectedImage =
+            event.target.result;
+
+
+          imagePreview.innerHTML = `
+
+            <div class="preview-wrapper">
+
+              <img
+                src="${selectedImage}"
+                alt="Selected repair"
+              >
+
+              <button
+                type="button"
+                id="removeImage"
+                class="remove-image"
+              >
+                Remove photo
+              </button>
+
+            </div>
+
+          `;
+
+
+          document
+            .getElementById(
+              "removeImage"
+            )
+            .addEventListener(
+              "click",
+              () => {
+
+                selectedImage = null;
+
+                issueImage.value = "";
+
+                imagePreview.innerHTML = "";
+
+              }
+            );
+
+        };
+
+
+      reader.readAsDataURL(file);
 
     }
-
-
-    if (!file.type.startsWith("image/")) {
-
-      alert("Please select an image file.");
-
-      issueImage.value = "";
-
-      return;
-
-    }
-
-
-    const reader =
-      new FileReader();
-
-
-    reader.onload = (event) => {
-
-      selectedImage =
-        event.target.result;
-
-
-      imagePreview.innerHTML = `
-
-        <div class="preview-wrapper">
-
-          <img
-            src="${selectedImage}"
-            alt="Selected repair"
-          >
-
-          <button
-            type="button"
-            id="removeImage"
-            class="remove-image"
-          >
-            Remove photo
-          </button>
-
-        </div>
-
-      `;
-
-
-      document
-        .getElementById("removeImage")
-        .addEventListener("click", () => {
-
-          selectedImage = null;
-
-          issueImage.value = "";
-
-          imagePreview.innerHTML = "";
-
-        });
-
-    };
-
-
-    reader.readAsDataURL(file);
-
-  });
+  );
 
 
   // =====================================================
   // CHOOSE LOCATION
   // =====================================================
 
-  chooseLocation.addEventListener("click", () => {
+  chooseLocation.addEventListener(
+    "click",
+    () => {
 
-    reportOverlay.classList.remove("active");
+      reportOverlay.classList.remove(
+        "active"
+      );
 
-    locationStatus.textContent =
-      "Click anywhere inside Fishers on the map.";
 
-    locationStatus.classList.add("waiting");
+      locationStatus.textContent =
+        "Click anywhere inside Fishers on the map.";
 
-    map.getContainer()
-      .classList.add("selecting-location");
 
-  });
+      locationStatus.classList.add(
+        "waiting"
+      );
+
+
+      map.getContainer()
+        .classList.add(
+          "selecting-location"
+        );
+
+    }
+  );
 
 
   // =====================================================
-  // ADDRESS CLEANER
+  // CLEAN ADDRESS
   // =====================================================
 
   function cleanAddress(address) {
@@ -800,7 +821,13 @@ document.addEventListener("DOMContentLoaded", () => {
       address.trim();
 
 
-    // Remove USA
+    cleaned =
+      cleaned.replace(
+        /,\s*United States$/i,
+        ""
+      );
+
+
     cleaned =
       cleaned.replace(
         /,\s*USA$/i,
@@ -808,7 +835,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
 
-    // Normalize Indiana
     cleaned =
       cleaned.replace(
         /,\s*Indiana\b/i,
@@ -822,10 +848,166 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
-  // ARC GIS REVERSE GEOCODING
+  // FORMAT ARCGIS RESULT
   // =====================================================
 
-  async function getRealAddress(lat, lng) {
+  function formatArcGISAddress(address) {
+
+    if (!address) {
+      return null;
+    }
+
+
+    /*
+      ArcGIS can return several different kinds
+      of locations.
+
+      Examples:
+
+      House:
+      13000 Promise Rd, Fishers, IN 46038
+
+      Business:
+      Target, Fishers, IN
+
+      School:
+      Fishers High School, Fishers, IN
+
+      Park:
+      Roy G. Holland Park, Fishers, IN
+    */
+
+
+    const city =
+      address.City ||
+      address.Subregion ||
+      address.Municipality ||
+      "Fishers";
+
+
+    const state =
+      address.RegionAbbr ||
+      "IN";
+
+
+    const postal =
+      address.Postal ||
+      "";
+
+
+    // =================================================
+    // BUSINESS / SCHOOL / PARK / POI
+    // =================================================
+
+    const placeName =
+      address.PlaceName ||
+      address.Place_name ||
+      address.TargetName ||
+      address.Name;
+
+
+    const streetAddress =
+      address.Address ||
+      address.StAddr;
+
+
+    /*
+      If there is a named place AND a street address,
+      use both.
+
+      Example:
+      Fishers High School, 13000 Promise Rd,
+      Fishers, IN 46038
+    */
+
+    if (
+      placeName &&
+      streetAddress
+    ) {
+
+      let result =
+        `${placeName}, ${streetAddress}, ${city}, ${state}`;
+
+
+      if (postal) {
+        result += ` ${postal}`;
+      }
+
+
+      return cleanAddress(result);
+
+    }
+
+
+    /*
+      Named place without street number.
+    */
+
+    if (placeName) {
+
+      let result =
+        `${placeName}, ${city}, ${state}`;
+
+
+      if (postal) {
+        result += ` ${postal}`;
+      }
+
+
+      return cleanAddress(result);
+
+    }
+
+
+    // =================================================
+    // NORMAL STREET ADDRESS
+    // =================================================
+
+    if (streetAddress) {
+
+      let result =
+        `${streetAddress}, ${city}, ${state}`;
+
+
+      if (postal) {
+        result += ` ${postal}`;
+      }
+
+
+      return cleanAddress(result);
+
+    }
+
+
+    // =================================================
+    // ARCGIS LONG LABEL
+    // =================================================
+
+    if (
+      address.LongLabel &&
+      address.LongLabel.trim()
+    ) {
+
+      return cleanAddress(
+        address.LongLabel
+      );
+
+    }
+
+
+    return null;
+
+  }
+
+
+  // =====================================================
+  // ARCGIS REVERSE GEOCODING
+  // =====================================================
+
+  async function getArcGISAddress(
+    lat,
+    lng
+  ) {
 
     try {
 
@@ -842,8 +1024,81 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       if (!response.ok) {
+
         throw new Error(
           "ArcGIS request failed."
+        );
+
+      }
+
+
+      const data =
+        await response.json();
+
+
+      if (
+        !data ||
+        !data.address
+      ) {
+
+        return null;
+
+      }
+
+
+      return formatArcGISAddress(
+        data.address
+      );
+
+    } catch (error) {
+
+      console.error(
+        "FixFishers: ArcGIS lookup failed.",
+        error
+      );
+
+      return null;
+
+    }
+
+  }
+
+
+  // =====================================================
+  // NOMINATIM FALLBACK
+  // =====================================================
+
+  async function getNominatimAddress(
+    lat,
+    lng
+  ) {
+
+    try {
+
+      const url =
+        `https://nominatim.openstreetmap.org/reverse` +
+        `?format=jsonv2` +
+        `&lat=${lat}` +
+        `&lon=${lng}` +
+        `&zoom=18` +
+        `&addressdetails=1`;
+
+
+      const response =
+        await fetch(
+          url,
+          {
+            headers: {
+              "Accept":
+                "application/json"
+            }
+          }
+        );
+
+
+      if (!response.ok) {
+        throw new Error(
+          "Nominatim request failed."
         );
       }
 
@@ -862,146 +1117,133 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      const address =
+      const a =
         data.address;
 
 
-      // =================================================
-      // OPTION 1:
-      // COMPLETE ARCGIS ADDRESS
-      // =================================================
+      // Named location
+      const namedPlace =
+        a.amenity ||
+        a.shop ||
+        a.tourism ||
+        a.leisure ||
+        a.school ||
+        a.building ||
+        a.public_building ||
+        a.name;
 
+
+      const houseNumber =
+        a.house_number;
+
+
+      const road =
+        a.road;
+
+
+      const city =
+        a.city ||
+        a.town ||
+        a.village ||
+        a.municipality ||
+        "Fishers";
+
+
+      const state =
+        a.state ||
+        "Indiana";
+
+
+      const zip =
+        a.postcode ||
+        "";
+
+
+      // Place + street
       if (
-        address.LongLabel &&
-        address.LongLabel.trim()
+        namedPlace &&
+        houseNumber &&
+        road
       ) {
 
-        const cleaned =
-          cleanAddress(
-            address.LongLabel
+        let result =
+          `${namedPlace}, ${houseNumber} ${road}, ${city}, IN`;
+
+
+        if (zip) {
+          result += ` ${zip}`;
+        }
+
+
+        return cleanAddress(
+          result
+        );
+
+      }
+
+
+      // Named place
+      if (namedPlace) {
+
+        let result =
+          `${namedPlace}, ${city}, IN`;
+
+
+        if (zip) {
+          result += ` ${zip}`;
+        }
+
+
+        return cleanAddress(
+          result
+        );
+
+      }
+
+
+      // Normal address
+      if (
+        houseNumber &&
+        road
+      ) {
+
+        let result =
+          `${houseNumber} ${road}, ${city}, IN`;
+
+
+        if (zip) {
+          result += ` ${zip}`;
+        }
+
+
+        return cleanAddress(
+          result
+        );
+
+      }
+
+
+      // Last human-readable fallback
+      if (data.display_name) {
+
+        const pieces =
+          data.display_name
+            .split(",")
+            .map(
+              part => part.trim()
+            )
+            .filter(Boolean);
+
+
+        if (pieces.length >= 2) {
+
+          return cleanAddress(
+            pieces
+              .slice(0, 4)
+              .join(", ")
           );
 
-
-        if (cleaned) {
-          return cleaned;
         }
-
-      }
-
-
-      // =================================================
-      // OPTION 2:
-      // STREET ADDRESS
-      // =================================================
-
-      if (
-        address.Address &&
-        address.City
-      ) {
-
-        let result =
-          address.Address;
-
-
-        result +=
-          `, ${address.City}`;
-
-
-        if (address.RegionAbbr) {
-
-          result +=
-            `, ${address.RegionAbbr}`;
-
-        }
-
-
-        if (address.Postal) {
-
-          result +=
-            ` ${address.Postal}`;
-
-        }
-
-
-        return cleanAddress(result);
-
-      }
-
-
-      // =================================================
-      // OPTION 3:
-      // PLACE NAME
-      // =================================================
-
-      if (
-        address.PlaceName &&
-        address.City
-      ) {
-
-        let result =
-          address.PlaceName;
-
-
-        result +=
-          `, ${address.City}`;
-
-
-        if (address.RegionAbbr) {
-
-          result +=
-            `, ${address.RegionAbbr}`;
-
-        }
-
-
-        if (address.Postal) {
-
-          result +=
-            ` ${address.Postal}`;
-
-        }
-
-
-        return cleanAddress(result);
-
-      }
-
-
-      // =================================================
-      // OPTION 4:
-      // NEAREST STREET
-      // =================================================
-
-      if (
-        address.StAddr &&
-        address.City
-      ) {
-
-        let result =
-          address.StAddr;
-
-
-        result +=
-          `, ${address.City}`;
-
-
-        if (address.RegionAbbr) {
-
-          result +=
-            `, ${address.RegionAbbr}`;
-
-        }
-
-
-        if (address.Postal) {
-
-          result +=
-            ` ${address.Postal}`;
-
-        }
-
-
-        return cleanAddress(result);
 
       }
 
@@ -1011,7 +1253,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
 
       console.error(
-        "FixFishers: Reverse geocoding failed:",
+        "FixFishers: Nominatim lookup failed.",
         error
       );
 
@@ -1023,270 +1265,347 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
-  // MAP CLICK
+  // FINAL ADDRESS LOOKUP
   // =====================================================
 
-  map.on("click", async (event) => {
+  async function getRealAddress(
+    lat,
+    lng
+  ) {
 
-    if (
-      !map.getContainer()
-        .classList.contains("selecting-location")
-    ) {
+    // First try ArcGIS because it has
+    // strong POI/business/school coverage.
 
-      return;
-
-    }
-
-
-    selectedLocation =
-      event.latlng;
-
-    selectedAddress = null;
-
-
-    map.getContainer()
-      .classList.remove("selecting-location");
-
-
-    // Loading state
-    locationStatus.textContent =
-      "Finding nearest real address...";
-
-    locationStatus.classList.add("waiting");
-
-
-    // Remove old temporary marker
-    if (window.selectionMarker) {
-
-      map.removeLayer(
-        window.selectionMarker
-      );
-
-    }
-
-
-    // Create temporary marker
-    window.selectionMarker =
-      L.marker(event.latlng)
-        .addTo(map);
-
-
-    window.selectionMarker
-      .bindPopup(
-        "Finding address..."
-      )
-      .openPopup();
-
-
-    // Open report form
-    reportOverlay.classList.add("active");
-
-
-    // =================================================
-    // FIND REAL ADDRESS
-    // =================================================
-
-    const address =
-      await getRealAddress(
-        event.latlng.lat,
-        event.latlng.lng
+    let address =
+      await getArcGISAddress(
+        lat,
+        lng
       );
 
 
     if (address) {
+      return address;
+    }
 
-      selectedAddress =
-        address;
+
+    // Try OpenStreetMap as a second source.
+
+    address =
+      await getNominatimAddress(
+        lat,
+        lng
+      );
 
 
+    if (address) {
+      return address;
+    }
+
+
+    // Absolutely NO coordinates.
+    return "Address unavailable";
+
+  }
+
+
+  // =====================================================
+  // MAP CLICK
+  // =====================================================
+
+  map.on(
+    "click",
+    async (event) => {
+
+      if (
+        !map.getContainer()
+          .classList
+          .contains(
+            "selecting-location"
+          )
+      ) {
+
+        return;
+
+      }
+
+
+      selectedLocation =
+        event.latlng;
+
+
+      selectedAddress = null;
+
+
+      map.getContainer()
+        .classList.remove(
+          "selecting-location"
+        );
+
+
+      // Loading state
       locationStatus.textContent =
-        `📍 ${address}`;
+        "Finding address or nearby place...";
 
-    } else {
 
-      // NEVER display coordinates.
+      locationStatus.classList.add(
+        "waiting"
+      );
+
+
+      // Remove old temporary marker
+      if (
+        window.selectionMarker
+      ) {
+
+        map.removeLayer(
+          window.selectionMarker
+        );
+
+      }
+
+
+      // Add temporary marker
+      window.selectionMarker =
+        L.marker(
+          event.latlng
+        ).addTo(map);
+
+
+      window.selectionMarker
+        .bindPopup(
+          "Finding location..."
+        )
+        .openPopup();
+
+
+      // Open report form
+      reportOverlay.classList.add(
+        "active"
+      );
+
+
+      // =================================================
+      // GET HUMAN-READABLE LOCATION
+      // =================================================
+
+      const address =
+        await getRealAddress(
+          event.latlng.lat,
+          event.latlng.lng
+        );
+
+
       selectedAddress =
+        address ||
         "Address unavailable";
 
 
       locationStatus.textContent =
-        "📍 Address unavailable";
+        `📍 ${selectedAddress}`;
+
+
+      locationStatus.classList.remove(
+        "waiting"
+      );
+
+
+      // Update marker popup
+      if (
+        window.selectionMarker
+      ) {
+
+        window.selectionMarker
+          .bindPopup(
+            `<strong>Report location</strong><br>${selectedAddress}`
+          )
+          .openPopup();
+
+      }
 
     }
-
-
-    locationStatus.classList.remove(
-      "waiting"
-    );
-
-
-    // Update temporary popup
-    if (window.selectionMarker) {
-
-      window.selectionMarker
-        .bindPopup(
-          `<strong>Report location</strong><br>${selectedAddress}`
-        )
-        .openPopup();
-
-    }
-
-  });
+  );
 
 
   // =====================================================
   // SUBMIT REPORT
   // =====================================================
 
-  submitReport.addEventListener("click", () => {
+  submitReport.addEventListener(
+    "click",
+    () => {
 
-    const type =
-      issueType.value;
-
-    const severity =
-      issueSeverity.value;
-
-    const description =
-      issueDescription.value.trim();
+      const type =
+        issueType.value;
 
 
-    if (!selectedLocation) {
+      const severity =
+        issueSeverity.value;
 
-      alert(
-        "Please choose a location on the map first."
+
+      const description =
+        issueDescription.value.trim();
+
+
+      if (!selectedLocation) {
+
+        alert(
+          "Please choose a location on the map first."
+        );
+
+        return;
+
+      }
+
+
+      if (!description) {
+
+        alert(
+          "Please add a description of the issue."
+        );
+
+        return;
+
+      }
+
+
+      const newReport = {
+
+        location: [
+          selectedLocation.lat,
+          selectedLocation.lng
+        ],
+
+        title: type,
+
+        category: type,
+
+        description:
+          description,
+
+        severity:
+          severity,
+
+        image:
+          selectedImage,
+
+        status:
+          "New",
+
+        address:
+          selectedAddress ||
+          "Address unavailable",
+
+        postedAt:
+          new Date()
+            .toLocaleString()
+
+      };
+
+
+      // Add report
+      reports.push(
+        newReport
       );
 
-      return;
 
-    }
-
-
-    if (!description) {
-
-      alert(
-        "Please add a description of the issue."
+      // Add marker
+      addReportMarker(
+        newReport
       );
 
-      return;
 
-    }
-
-
-    const newReport = {
-
-      location: [
-        selectedLocation.lat,
-        selectedLocation.lng
-      ],
-
-      title: type,
-
-      category: type,
-
-      description: description,
-
-      severity: severity,
-
-      image: selectedImage,
-
-      status: "New",
-
-      address:
-        selectedAddress ||
-        "Address unavailable",
-
-      postedAt:
-        new Date().toLocaleString()
-
-    };
+      // Refresh sidebar
+      renderIssues();
 
 
-    // Add report
-    reports.push(newReport);
-
-
-    // Add marker
-    addReportMarker(newReport);
-
-
-    // Refresh sidebar
-    renderIssues();
-
-
-    // Remove temporary marker
-    if (window.selectionMarker) {
-
-      map.removeLayer(
+      // Remove temporary marker
+      if (
         window.selectionMarker
-      );
+      ) {
 
-      window.selectionMarker =
+        map.removeLayer(
+          window.selectionMarker
+        );
+
+        window.selectionMarker =
+          null;
+
+      }
+
+
+      // Reset form
+      issueDescription.value =
+        "";
+
+      issueImage.value =
+        "";
+
+      imagePreview.innerHTML =
+        "";
+
+      selectedImage =
         null;
 
+      selectedLocation =
+        null;
+
+      selectedAddress =
+        null;
+
+
+      locationStatus.textContent =
+        "Location not selected";
+
+
+      // Close modal
+      reportOverlay.classList.remove(
+        "active"
+      );
+
+
+      // Zoom to report
+      map.setView(
+        [
+          newReport.location[0],
+          newReport.location[1]
+        ],
+        15
+      );
+
+
+      // Open popup
+      const newMarker =
+        markers[
+          reports.length - 1
+        ];
+
+
+      if (newMarker) {
+
+        newMarker.openPopup();
+
+      }
+
+
+      alert(
+        "Your report has been added to the FixFishers map!"
+      );
+
     }
-
-
-    // Reset form
-    issueDescription.value = "";
-
-    issueImage.value = "";
-
-    imagePreview.innerHTML = "";
-
-    selectedImage = null;
-
-    selectedLocation = null;
-
-    selectedAddress = null;
-
-
-    locationStatus.textContent =
-      "Location not selected";
-
-
-    // Close modal
-    reportOverlay.classList.remove(
-      "active"
-    );
-
-
-    // Zoom to report
-    map.setView(
-      [
-        newReport.location[0],
-        newReport.location[1]
-      ],
-      15
-    );
-
-
-    // Open popup
-    const newMarker =
-      markers[reports.length - 1];
-
-
-    if (newMarker) {
-
-      newMarker.openPopup();
-
-    }
-
-
-    alert(
-      "Your report has been added to the FixFishers map!"
-    );
-
-  });
+  );
 
 
   // =====================================================
   // MAP SIZE
   // =====================================================
 
-  setTimeout(() => {
+  setTimeout(
+    () => {
 
-    map.invalidateSize();
+      map.invalidateSize();
 
-  }, 500);
+    },
+    500
+  );
 
 });
