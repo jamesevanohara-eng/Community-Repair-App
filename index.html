@@ -90,8 +90,50 @@
       </div>
 
 
-      <div id="map"></div>
+      <div class="map-with-sidebar">
 
+  <div id="map"></div>
+
+  <aside class="issue-sidebar">
+
+    <div class="issue-sidebar-header">
+      <div>
+        <p class="eyebrow">COMMUNITY REPORTS</p>
+        <h3>Issues nearby</h3>
+      </div>
+
+      <span id="issueCount">0</span>
+    </div>
+
+    <div class="issue-filters">
+
+      <select id="typeFilter">
+        <option value="all">All repair types</option>
+        <option value="Pothole / road damage">Pothole / road damage</option>
+        <option value="Broken streetlight">Broken streetlight</option>
+        <option value="Flooding / drainage">Flooding / drainage</option>
+        <option value="Fallen tree">Fallen tree</option>
+        <option value="Damaged sidewalk">Damaged sidewalk</option>
+        <option value="Broken sign">Broken sign</option>
+        <option value="Park issue">Park issue</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <select id="severityFilter">
+        <option value="all">All severity</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+        <option value="Critical">Critical</option>
+      </select>
+
+    </div>
+
+    <div id="issueList" class="issue-list"></div>
+
+  </aside>
+
+</div>
 
       <div class="legend">
 

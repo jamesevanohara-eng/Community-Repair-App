@@ -48,13 +48,9 @@ html {
 
 body {
   margin: 0;
-
   background: var(--cream);
-
   color: var(--ink);
-
   font-family: var(--sans);
-
   -webkit-font-smoothing: antialiased;
 }
 
@@ -67,7 +63,6 @@ body::before {
   content: "";
 
   position: fixed;
-
   inset: 0;
 
   pointer-events: none;
@@ -96,17 +91,13 @@ body::before {
 
 .header {
   position: sticky;
-
   top: 0;
-
   z-index: 5000;
 
   height: 78px;
 
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
 
   padding: 0 5vw;
@@ -120,30 +111,21 @@ body::before {
 
 
 /* =========================================================
-   WILLOW BRAND
+   BRAND
 ========================================================= */
 
 .brand {
   display: flex;
-
   align-items: center;
-
   gap: 11px;
 
   color: var(--ink);
 
   font-size: 18px;
-
   font-weight: 700;
 
   letter-spacing: -0.035em;
 }
-
-
-/*
-  Willow-inspired logo:
-  trunk + hanging leaves
-*/
 
 .brand-mark {
   position: relative;
@@ -152,7 +134,6 @@ body::before {
   height: 38px;
 
   display: grid;
-
   place-items: center;
 
   overflow: hidden;
@@ -164,7 +145,6 @@ body::before {
   color: var(--cream);
 
   font-family: var(--serif);
-
   font-size: 14px;
 
   box-shadow:
@@ -182,7 +162,6 @@ body::before {
   position: absolute;
 
   width: 2px;
-
   height: 25px;
 
   bottom: -3px;
@@ -196,13 +175,11 @@ body::before {
 
 .brand-mark::before {
   left: 17px;
-
   transform: rotate(-8deg);
 }
 
 .brand-mark::after {
   left: 22px;
-
   transform: rotate(10deg);
 }
 
@@ -211,7 +188,6 @@ body::before {
 
   border-radius: 48% 52% 55% 45%;
 }
-
 
 .brand > span:last-child > span {
   color: var(--willow);
@@ -226,7 +202,6 @@ body::before {
   padding: 11px 18px;
 
   border: 1px solid var(--willow);
-
   border-radius: 20px;
 
   background: var(--willow);
@@ -259,7 +234,6 @@ body::before {
 
 main {
   width: 90%;
-
   max-width: 1280px;
 
   margin: auto;
@@ -276,7 +250,6 @@ main {
   min-height: 500px;
 
   display: flex;
-
   align-items: center;
 
   padding: 90px 0;
@@ -286,18 +259,12 @@ main {
   border-bottom: 1px solid var(--line);
 }
 
-
-/*
-  Large soft willow canopy in background
-*/
-
 .intro::after {
   content: "";
 
   position: absolute;
 
   right: -100px;
-
   top: -130px;
 
   width: 480px;
@@ -316,7 +283,6 @@ main {
   pointer-events: none;
 }
 
-
 .intro > div {
   position: relative;
 
@@ -334,7 +300,6 @@ main {
 
 .eyebrow {
   display: flex;
-
   align-items: center;
 
   gap: 9px;
@@ -344,7 +309,6 @@ main {
   color: var(--willow);
 
   font-size: 11px;
-
   font-weight: 700;
 
   letter-spacing: 0.16em;
@@ -384,7 +348,6 @@ h1 {
   font-weight: 500;
 }
 
-
 h1 span {
   display: block;
 
@@ -417,7 +380,6 @@ h1 span {
   padding: 70px 0 110px;
 }
 
-
 .map-header {
   display: flex;
 
@@ -430,7 +392,6 @@ h1 span {
   margin-bottom: 22px;
 }
 
-
 .map-header h2 {
   margin: 0 0 7px;
 
@@ -442,7 +403,6 @@ h1 span {
 
   letter-spacing: -0.04em;
 }
-
 
 .map-header p {
   margin: 0;
@@ -482,12 +442,30 @@ h1 span {
 
 
 /* =========================================================
+   MAP + SIDEBAR
+========================================================= */
+
+.map-with-sidebar {
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr) 365px;
+
+  gap: 20px;
+
+  align-items: start;
+}
+
+.map-container {
+  min-width: 0;
+}
+
+
+/* =========================================================
    MAP
 ========================================================= */
 
 #map {
   width: 100%;
-
   height: 620px;
 
   overflow: hidden;
@@ -504,16 +482,433 @@ h1 span {
   animation: mapGrow 0.8s ease both;
 }
 
-
-/*
-  Softer natural map colors
-*/
-
 #map .leaflet-tile {
   filter:
     saturate(0.68)
     sepia(0.08)
     brightness(1.05);
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.issue-sidebar {
+  height: 620px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      160deg,
+      #e5eee0 0%,
+      #eef3e9 35%,
+      #f5f5ee 100%
+    );
+
+  border: 1px solid #c4d0bf;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 18px 45px rgba(47, 70, 52, 0.11);
+}
+
+
+/* =========================================================
+   SIDEBAR HEADER
+========================================================= */
+
+.issue-sidebar-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 22px 22px 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(196, 216, 191, 0.75),
+      rgba(238, 243, 233, 0.45)
+    );
+
+  border-bottom: 1px solid #c8d4c4;
+}
+
+.sidebar-eyebrow {
+  margin: 0 0 6px;
+
+  color: var(--willow);
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.15em;
+
+  text-transform: uppercase;
+}
+
+.issue-sidebar-header h3 {
+  margin: 0;
+
+  color: var(--ink);
+
+  font-family: var(--serif);
+
+  font-size: 26px;
+
+  line-height: 1.05;
+
+  font-weight: 500;
+
+  letter-spacing: -0.04em;
+}
+
+#issueCount {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: var(--willow);
+
+  color: white;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  box-shadow:
+    0 5px 14px rgba(47, 80, 57, 0.20);
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.issue-filters {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 8px;
+
+  padding: 12px;
+
+  background: rgba(251, 250, 245, 0.8);
+
+  border-bottom: 1px solid #d1d9cc;
+}
+
+.issue-filters select {
+  width: 100%;
+
+  min-width: 0;
+
+  padding: 10px 9px;
+
+  border: 1px solid #c7d1c2;
+
+  border-radius: 8px;
+
+  background: white;
+
+  color: var(--willow-dark);
+
+  font-family: var(--sans);
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  outline: none;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.issue-filters select:hover {
+  border-color: var(--sage);
+
+  background: #fcfdf9;
+}
+
+.issue-filters select:focus {
+  border-color: var(--willow);
+
+  box-shadow:
+    0 0 0 3px rgba(72, 107, 79, 0.09);
+}
+
+
+/* =========================================================
+   ISSUE LIST
+========================================================= */
+
+.issue-list {
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding: 12px;
+}
+
+.issue-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.issue-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.issue-list::-webkit-scrollbar-thumb {
+  background: #a9bea4;
+
+  border-radius: 20px;
+}
+
+
+/* =========================================================
+   ISSUE CARD
+========================================================= */
+
+.issue-card {
+  position: relative;
+
+  margin-bottom: 11px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #d3dbd0;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.issue-card:last-child {
+  margin-bottom: 0;
+}
+
+.issue-card:hover {
+  transform: translateY(-2px);
+
+  border-color: #8ba487;
+
+  box-shadow:
+    0 9px 22px rgba(47, 70, 52, 0.12);
+}
+
+.issue-card.active {
+  border-color: var(--willow);
+
+  box-shadow:
+    0 0 0 2px rgba(72, 107, 79, 0.13),
+    0 8px 20px rgba(47, 70, 52, 0.10);
+}
+
+
+/* =========================================================
+   CARD IMAGE
+========================================================= */
+
+.issue-card-image {
+  display: block;
+
+  width: 100%;
+
+  height: 125px;
+
+  object-fit: cover;
+}
+
+
+/* =========================================================
+   CARD CONTENT
+========================================================= */
+
+.issue-card-content {
+  padding: 13px 14px 14px;
+}
+
+.issue-card-top {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+.issue-card-title {
+  margin: 0 0 5px;
+
+  color: var(--ink);
+
+  font-family: var(--serif);
+
+  font-size: 18px;
+
+  line-height: 1.15;
+
+  font-weight: 500;
+
+  letter-spacing: -0.025em;
+}
+
+
+/* =========================================================
+   ISSUE TYPE
+========================================================= */
+
+.issue-type {
+  display: inline-block;
+
+  color: var(--willow);
+
+  font-size: 8px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.09em;
+
+  line-height: 1.3;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   SEVERITY BADGES
+========================================================= */
+
+.severity-badge {
+  flex-shrink: 0;
+
+  padding: 5px 8px;
+
+  border-radius: 20px;
+
+  color: white;
+
+  font-size: 8px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.05em;
+
+  line-height: 1;
+
+  text-transform: uppercase;
+}
+
+.severity-low {
+  background: #5c8c61;
+}
+
+.severity-medium {
+  background: #c19a28;
+}
+
+.severity-high {
+  background: #d47732;
+}
+
+.severity-critical {
+  background: #b9433d;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.issue-description {
+  margin: 9px 0 11px;
+
+  color: var(--muted);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   CARD META
+========================================================= */
+
+.issue-meta {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+
+  padding-top: 9px;
+
+  border-top: 1px solid #e4e9df;
+}
+
+.issue-meta-row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color: #7a877c;
+
+  font-size: 9px;
+
+  line-height: 1.3;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.no-issues {
+  padding: 55px 25px;
+
+  color: var(--muted);
+
+  text-align: center;
+
+  font-family: var(--serif);
+
+  font-size: 17px;
+
+  line-height: 1.4;
 }
 
 
@@ -549,33 +944,44 @@ h1 span {
    ISSUE MARKERS
 ========================================================= */
 
+.fixfishers-marker-wrapper {
+  background: transparent !important;
+
+  border: none !important;
+}
+
 .custom-marker {
-  width: 37px;
-  height: 37px;
+  position: relative;
+
+  width: 38px;
+  height: 38px;
 
   display: grid;
 
   place-items: center;
 
-  background: var(--bark);
+  background: var(--marker-color);
 
   color: white;
 
-  border: 3px solid rgba(251, 250, 245, 0.95);
+  border: 3px solid var(--severity-color);
 
-  border-radius: 50% 50% 50% 10%;
+  border-radius: 50% 50% 50% 12%;
 
   transform: rotate(-45deg);
 
   box-shadow:
-    0 4px 12px rgba(76, 62, 48, 0.25);
+    0 4px 12px rgba(30, 50, 35, 0.24);
 
   transition:
-    transform 0.2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .custom-marker span {
   transform: rotate(45deg);
+
+  font-size: 13px;
 
   font-weight: 700;
 }
@@ -583,7 +989,28 @@ h1 span {
 .custom-marker:hover {
   transform:
     rotate(-45deg)
-    translateY(-3px);
+    translateY(-4px);
+
+  box-shadow:
+    0 9px 20px rgba(30, 50, 35, 0.3);
+}
+
+.marker-severity {
+  position: absolute;
+
+  top: -5px;
+  right: -5px;
+
+  width: 11px;
+  height: 11px;
+
+  border-radius: 50%;
+
+  background: var(--severity-color);
+
+  border: 2px solid var(--cream-light);
+
+  transform: rotate(45deg);
 }
 
 
@@ -596,7 +1023,7 @@ h1 span {
 
   color: var(--ink);
 
-  border-radius: 9px;
+  border-radius: 10px;
 
   box-shadow:
     0 15px 35px rgba(47, 70, 52, 0.18);
@@ -610,20 +1037,6 @@ h1 span {
   min-width: 210px;
 
   padding: 4px;
-}
-
-.map-popup strong {
-  display: block;
-
-  margin-bottom: 8px;
-
-  color: var(--willow);
-
-  font-size: 10px;
-
-  letter-spacing: 0.1em;
-
-  text-transform: uppercase;
 }
 
 .map-popup h3 {
@@ -646,6 +1059,87 @@ h1 span {
   line-height: 1.5;
 }
 
+.popup-image {
+  display: block;
+
+  width: 100%;
+  height: 155px;
+
+  object-fit: cover;
+
+  border-radius: 7px 7px 0 0;
+
+  margin-bottom: 12px;
+}
+
+.popup-no-image {
+  height: 100px;
+
+  display: grid;
+
+  place-items: center;
+
+  margin-bottom: 12px;
+
+  background: var(--sage-light);
+
+  color: var(--muted);
+
+  border-radius: 7px 7px 0 0;
+
+  font-size: 11px;
+}
+
+.popup-content {
+  padding: 0 3px 3px;
+}
+
+.popup-topline {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 7px;
+}
+
+.popup-category {
+  font-size: 9px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.07em;
+
+  text-transform: uppercase;
+}
+
+.popup-severity {
+  padding: 4px 7px;
+
+  border-radius: 10px;
+
+  color: white;
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.popup-footer {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-top: 10px;
+}
+
 .map-popup-status {
   display: inline-block;
 
@@ -660,6 +1154,17 @@ h1 span {
   font-size: 10px;
 
   font-weight: 700;
+}
+
+.popup-address,
+.popup-date {
+  margin-top: 6px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+
+  line-height: 1.4;
 }
 
 
@@ -747,7 +1252,6 @@ h1 span {
   visibility: visible;
 }
 
-
 .report-panel {
   position: relative;
 
@@ -783,7 +1287,6 @@ h1 span {
   position: absolute;
 
   top: 18px;
-
   right: 18px;
 
   width: 34px;
@@ -894,7 +1397,7 @@ h1 span {
 
 
 /* =========================================================
-   LOCATION BUTTON
+   LOCATION
 ========================================================= */
 
 .location-button {
@@ -923,6 +1426,20 @@ h1 span {
   background: var(--sage-light);
 
   transform: translateY(-1px);
+}
+
+.location-status {
+  margin: 9px 0 0;
+
+  color: #879187;
+
+  font-size: 11px;
+}
+
+.location-status.waiting {
+  color: var(--willow);
+
+  font-weight: 700;
 }
 
 
@@ -963,25 +1480,6 @@ h1 span {
 
 
 /* =========================================================
-   LOCATION STATUS
-========================================================= */
-
-.location-status {
-  margin: 9px 0 0;
-
-  color: #879187;
-
-  font-size: 11px;
-}
-
-.location-status.waiting {
-  color: var(--willow);
-
-  font-weight: 700;
-}
-
-
-/* =========================================================
    MAP SELECTION
 ========================================================= */
 
@@ -995,7 +1493,6 @@ h1 span {
   position: absolute;
 
   top: 18px;
-
   left: 50%;
 
   z-index: 1000;
@@ -1022,6 +1519,99 @@ h1 span {
 
   box-shadow:
     0 7px 20px rgba(47, 70, 52, 0.12);
+}
+
+
+/* =========================================================
+   IMAGE UPLOAD
+========================================================= */
+
+#issueImage {
+  width: 100%;
+
+  padding: 11px;
+
+  border: 1px dashed #b8c4b5;
+
+  border-radius: 8px;
+
+  background: #f0f3eb;
+
+  color: var(--muted);
+
+  cursor: pointer;
+}
+
+#issueImage::file-selector-button {
+  margin-right: 10px;
+
+  padding: 7px 11px;
+
+  border: none;
+
+  border-radius: 6px;
+
+  background: var(--willow);
+
+  color: white;
+
+  font-family: var(--sans);
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.image-help {
+  margin: 7px 0 0;
+
+  color: #879187;
+
+  font-size: 11px;
+}
+
+.image-preview {
+  margin-top: 12px;
+}
+
+.preview-wrapper {
+  position: relative;
+}
+
+.preview-wrapper img {
+  display: block;
+
+  width: 100%;
+
+  max-height: 200px;
+
+  object-fit: cover;
+
+  border-radius: 9px;
+
+  border: 1px solid var(--line);
+}
+
+.remove-image {
+  margin-top: 7px;
+
+  padding: 5px 9px;
+
+  border: 1px solid #d3bdb4;
+
+  border-radius: 5px;
+
+  background: transparent;
+
+  color: #9a5c4c;
+
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+.remove-image:hover {
+  background: #f3e2dc;
 }
 
 
@@ -1077,6 +1667,19 @@ h1 span {
    MOBILE
 ========================================================= */
 
+@media (max-width: 950px) {
+
+  .map-with-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .issue-sidebar {
+    height: 430px;
+  }
+
+}
+
+
 @media (max-width: 700px) {
 
   .header {
@@ -1123,6 +1726,24 @@ h1 span {
     border-radius: 14px 14px 6px 6px;
   }
 
+  .issue-sidebar {
+    height: 400px;
+
+    border-radius: 14px;
+  }
+
+  .issue-sidebar-header {
+    padding: 18px;
+  }
+
+  .issue-filters {
+    padding: 10px;
+  }
+
+  .issue-list {
+    padding: 10px;
+  }
+
   .legend {
     flex-wrap: wrap;
 
@@ -1132,281 +1753,5 @@ h1 span {
   .report-panel {
     padding: 30px 22px;
   }
-}
-/* =========================================================
-   REPAIR MARKERS
-========================================================= */
 
-.fixfishers-marker-wrapper {
-  background: transparent !important;
-
-  border: none !important;
-}
-
-
-.custom-marker {
-  position: relative;
-
-  width: 38px;
-  height: 38px;
-
-  display: grid;
-
-  place-items: center;
-
-  background: var(--marker-color);
-
-  color: white;
-
-  border: 3px solid var(--severity-color);
-
-  border-radius: 50% 50% 50% 12%;
-
-  transform: rotate(-45deg);
-
-  box-shadow:
-    0 4px 12px rgba(30, 50, 35, 0.24);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-
-.custom-marker span {
-  transform: rotate(45deg);
-
-  font-size: 13px;
-
-  font-weight: 700;
-}
-
-
-.custom-marker:hover {
-  transform:
-    rotate(-45deg)
-    translateY(-4px);
-
-  box-shadow:
-    0 9px 20px rgba(30, 50, 35, 0.3);
-}
-
-
-/*
-  Severity indicator
-*/
-
-.marker-severity {
-  position: absolute;
-
-  top: -5px;
-
-  right: -5px;
-
-  width: 11px;
-  height: 11px;
-
-  border-radius: 50%;
-
-  background: var(--severity-color);
-
-  border: 2px solid var(--cream-light);
-
-  transform: rotate(45deg);
-}
-
-
-/* =========================================================
-   POPUP IMAGE
-========================================================= */
-
-.popup-image {
-  display: block;
-
-  width: 100%;
-
-  height: 155px;
-
-  object-fit: cover;
-
-  border-radius: 7px 7px 0 0;
-
-  margin-bottom: 12px;
-}
-
-
-.popup-no-image {
-  height: 100px;
-
-  display: grid;
-
-  place-items: center;
-
-  margin-bottom: 12px;
-
-  background: var(--sage-light);
-
-  color: var(--muted);
-
-  border-radius: 7px 7px 0 0;
-
-  font-size: 11px;
-}
-
-
-.popup-content {
-  padding: 0 3px 3px;
-}
-
-
-.popup-topline {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 10px;
-
-  margin-bottom: 7px;
-}
-
-
-.popup-category {
-  font-size: 9px;
-
-  font-weight: 700;
-
-  letter-spacing: 0.07em;
-
-  text-transform: uppercase;
-}
-
-
-.popup-severity {
-  padding: 4px 7px;
-
-  border-radius: 10px;
-
-  color: white;
-
-  font-size: 9px;
-
-  font-weight: 700;
-
-  text-transform: uppercase;
-}
-
-
-.popup-footer {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  margin-top: 10px;
-}
-
-
-/* =========================================================
-   IMAGE UPLOAD
-========================================================= */
-
-#issueImage {
-  width: 100%;
-
-  padding: 11px;
-
-  border: 1px dashed #b8c4b5;
-
-  border-radius: 8px;
-
-  background: #f0f3eb;
-
-  color: var(--muted);
-
-  cursor: pointer;
-}
-
-
-#issueImage::file-selector-button {
-  margin-right: 10px;
-
-  padding: 7px 11px;
-
-  border: none;
-
-  border-radius: 6px;
-
-  background: var(--willow);
-
-  color: white;
-
-  font-family: var(--sans);
-
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-
-.image-help {
-  margin: 7px 0 0;
-
-  color: #879187;
-
-  font-size: 11px;
-}
-
-
-/* =========================================================
-   IMAGE PREVIEW
-========================================================= */
-
-.image-preview {
-  margin-top: 12px;
-}
-
-
-.preview-wrapper {
-  position: relative;
-}
-
-
-.preview-wrapper img {
-  display: block;
-
-  width: 100%;
-
-  max-height: 200px;
-
-  object-fit: cover;
-
-  border-radius: 9px;
-
-  border: 1px solid var(--line);
-}
-
-
-.remove-image {
-  margin-top: 7px;
-
-  padding: 5px 9px;
-
-  border: 1px solid #d3bdb4;
-
-  border-radius: 5px;
-
-  background: transparent;
-
-  color: #9a5c4c;
-
-  font-size: 11px;
-
-  cursor: pointer;
-}
-
-.remove-image:hover {
-  background: #f3e2dc;
 }

@@ -107,7 +107,12 @@ document.addEventListener("DOMContentLoaded", () => {
       image:
         "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=80",
 
-      status: "New"
+      status: "New",
+
+      // NEW SIDEBAR
+      address: "Downtown Fishers",
+
+      postedAt: "September 28, 2026"
     },
 
 
@@ -126,7 +131,12 @@ document.addEventListener("DOMContentLoaded", () => {
       image:
         "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=900&q=80",
 
-      status: "Under review"
+      status: "Under review",
+
+      // NEW SIDEBAR
+      address: "116th Street area",
+
+      postedAt: "September 27, 2026"
     },
 
 
@@ -145,7 +155,12 @@ document.addEventListener("DOMContentLoaded", () => {
       image:
         "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80",
 
-      status: "Resolved"
+      status: "Resolved",
+
+      // NEW SIDEBAR
+      address: "Southeast Fishers",
+
+      postedAt: "September 25, 2026"
     },
 
 
@@ -164,10 +179,228 @@ document.addEventListener("DOMContentLoaded", () => {
       image:
         "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=900&q=80",
 
-      status: "New"
+      status: "New",
+
+      // NEW SIDEBAR
+      address: "North Fishers",
+
+      postedAt: "September 29, 2026"
     }
 
   ];
+
+
+  // =====================================================
+  // NEW SIDEBAR REFERENCES
+  // =====================================================
+
+  const issueList =
+    document.getElementById("issueList");
+
+  const issueCount =
+    document.getElementById("issueCount");
+
+  const typeFilter =
+    document.getElementById("typeFilter");
+
+  const severityFilter =
+    document.getElementById("severityFilter");
+
+
+  // Keep track of markers so sidebar cards can control them
+  const markers = [];
+
+
+  // =====================================================
+  // NEW SIDEBAR — RENDER ISSUES
+  // =====================================================
+
+  function renderIssues() {
+
+    if (!issueList) {
+      return;
+    }
+
+    const selectedType =
+      typeFilter ? typeFilter.value : "all";
+
+    const selectedSeverity =
+      severityFilter ? severityFilter.value : "all";
+
+
+    const filteredReports = reports.filter((report) => {
+
+      const typeMatches =
+        selectedType === "all" ||
+        report.category === selectedType;
+
+      const severityMatches =
+        selectedSeverity === "all" ||
+        report.severity === selectedSeverity;
+
+      return typeMatches && severityMatches;
+
+    });
+
+
+    if (issueCount) {
+      issueCount.textContent =
+        filteredReports.length;
+    }
+
+
+    if (filteredReports.length === 0) {
+
+      issueList.innerHTML = `
+        <div class="no-issues">
+          No reports match these filters.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    issueList.innerHTML = filteredReports.map((report) => {
+
+      const severityClass =
+        report.severity.toLowerCase();
+
+
+      const imageHTML = report.image
+
+        ? `
+          <img
+            class="issue-card-image"
+            src="${report.image}"
+            alt="Photo of ${report.title}"
+          >
+        `
+
+        : "";
+
+
+      return `
+
+        <div
+          class="issue-card"
+          data-report-index="${reports.indexOf(report)}"
+        >
+
+          ${imageHTML}
+
+          <div class="issue-card-content">
+
+            <div class="issue-card-top">
+
+              <div>
+
+                <h4 class="issue-card-title">
+                  ${report.title}
+                </h4>
+
+                <div
+                  class="issue-type"
+                  style="color: ${repairColors[report.category] || repairColors["Other"]}"
+                >
+                  ${report.category}
+                </div>
+
+              </div>
+
+              <span
+                class="severity-badge severity-${severityClass}"
+              >
+                ${report.severity}
+              </span>
+
+            </div>
+
+
+            <p class="issue-description">
+              ${report.description}
+            </p>
+
+
+            <div class="issue-meta">
+
+              <div class="issue-meta-row">
+                <span>📍</span>
+                <span>
+                  ${report.address || "Fishers, Indiana"}
+                </span>
+              </div>
+
+              <div class="issue-meta-row">
+                <span>🕒</span>
+                <span>
+                  ${report.postedAt || "Recently reported"}
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+
+    // =================================================
+    // SIDEBAR CARD CLICK
+    // =================================================
+
+    document
+      .querySelectorAll(".issue-card")
+      .forEach((card) => {
+
+        card.addEventListener("click", () => {
+
+          const index =
+            Number(card.dataset.reportIndex);
+
+          const report =
+            reports[index];
+
+          if (!report) {
+            return;
+          }
+
+
+          // Center map on report
+          map.setView(
+            report.location,
+            15
+          );
+
+
+          // Open corresponding popup
+          if (markers[index]) {
+
+            markers[index].openPopup();
+
+          }
+
+
+          // Highlight card
+          document
+            .querySelectorAll(".issue-card")
+            .forEach((otherCard) => {
+
+              otherCard.classList.remove("active");
+
+            });
+
+          card.classList.add("active");
+
+        });
+
+      });
+
+  }
 
 
   // =====================================================
@@ -219,6 +452,13 @@ document.addEventListener("DOMContentLoaded", () => {
         icon: icon
       }
     ).addTo(map);
+
+
+    // NEW SIDEBAR
+    // Save marker so sidebar cards can open it
+    const markerIndex = reports.indexOf(report);
+
+    markers[markerIndex] = marker;
 
 
     // =================================================
@@ -282,6 +522,16 @@ document.addEventListener("DOMContentLoaded", () => {
             ${report.description}
           </p>
 
+          <!-- NEW SIDEBAR INFO -->
+
+          <div class="popup-address">
+            📍 ${report.address || "Fishers, Indiana"}
+          </div>
+
+          <div class="popup-date">
+            🕒 ${report.postedAt || "Recently reported"}
+          </div>
+
           <div class="popup-footer">
 
             <span class="map-popup-status">
@@ -296,11 +546,79 @@ document.addEventListener("DOMContentLoaded", () => {
 
     `);
 
+
+    // =================================================
+    // MARKER CLICK → HIGHLIGHT SIDEBAR
+    // =================================================
+
+    marker.on("click", () => {
+
+      if (!issueList) {
+        return;
+      }
+
+      document
+        .querySelectorAll(".issue-card")
+        .forEach((card) => {
+
+          card.classList.remove("active");
+
+        });
+
+
+      const card =
+        document.querySelector(
+          `.issue-card[data-report-index="${markerIndex}"]`
+        );
+
+
+      if (card) {
+
+        card.classList.add("active");
+
+        card.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest"
+        });
+
+      }
+
+    });
+
   }
 
 
   // Add demo reports
   reports.forEach(addReportMarker);
+
+
+  // NEW SIDEBAR
+  // Render sidebar after all demo markers exist
+  renderIssues();
+
+
+  // NEW SIDEBAR
+  // Filters
+  if (typeFilter) {
+
+    typeFilter.addEventListener("change", () => {
+
+      renderIssues();
+
+    });
+
+  }
+
+
+  if (severityFilter) {
+
+    severityFilter.addEventListener("change", () => {
+
+      renderIssues();
+
+    });
+
+  }
 
 
   // =====================================================
@@ -582,13 +900,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
       image: selectedImage,
 
-      status: "New"
+      status: "New",
+
+      // NEW SIDEBAR
+      address:
+        `Fishers, Indiana — ${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)}`,
+
+      postedAt:
+        new Date().toLocaleString()
 
     };
 
 
+    // NEW SIDEBAR
+    // Add report to the reports array
+    reports.push(newReport);
+
+
     // Add the new colored marker
     addReportMarker(newReport);
+
+
+    // NEW SIDEBAR
+    // Refresh issue list
+    renderIssues();
 
 
     // Remove temporary location marker
