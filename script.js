@@ -1,344 +1,290 @@
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof L === "undefined") return console.error("FixFishers: Leaflet failed to load.");
-
   const $ = (id) => document.getElementById(id);
 
-  // ---------- CONFIG ----------
-  const CATEGORIES = {
-    "Pothole / road damage": "#3b6f94", "Broken streetlight": "#76609e", "Flooding / drainage": "#3a8792",
-    "Fallen tree": "#4b7a51", "Damaged sidewalk": "#8a6a4a", "Broken sign": "#8b6a8f",
-    "Park issue": "#a9822f", "Other": "#66706a"
-  };
-  const STATUSES = ["Received", "Under review", "In progress", "Resolved"];
-  const STATUS_COLOR = { "Received": "#8a6a4a", "Under review": "#b7791f", "In progress": "#3b6f94", "Resolved": "#3f6a4c" };
-  const SEV_RANK = { Low: 1, Medium: 2, High: 3, Critical: 4 };
-  const DUPE_METERS = 75;
-  const KEY = "fixfishers_v2", VOTES_KEY = "fixfishers_v2_votes";
-  const ADMIN = new URLSearchParams(location.search).has("admin"); // demo: add ?admin to the URL
+  // ---------- MAP (can zoom out far; borders stay visible) ----------
+  const fishersBounds = L.latLngBounds([39.900, -86.080], [40.010, -85.930]);
+  const map = L.map("map", {
+    center: [39.9568, -85.9948], zoom: 12, minZoom: 9, maxZoom: 18,
+    maxBounds: L.latLngBounds([39.60, -86.40], [40.30, -85.60]), maxBoundsViscosity: 0.6
+  });
+  const street = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap contributors" });
+  const earth = L.layerGroup([
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Tiles &copy; Esri" }),
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19 }),
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19 })
+  ]);
+  street.addTo(map);
+  function setMode(mode) {
+    map.removeLayer(mode === "earth" ? street : earth);
+    (mode === "earth" ? earth : street).addTo(map);
+    $("modeStreet").classList.toggle("active", mode !== "earth");
+    $("modeEarth").classList.toggle("active", mode === "earth");
+  }
+  $("modeStreet").onclick = () => setMode("street");
+  $("modeEarth").onclick = () => setMode("earth");
 
-  const center = [39.9568, -85.9948];
-  const bounds = L.latLngBounds([39.900, -86.080], [40.010, -85.930]);
-  const map = L.map("map", { center, zoom: 13, minZoom: 12, maxZoom: 18, maxBounds: bounds, maxBoundsViscosity: 1 });
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-  }).addTo(map);
-  const layer = L.layerGroup().addTo(map);
+  const markerLayer = L.layerGroup().addTo(map);
   let markers = {};
 
-  // ---------- DATA ----------
-  const daysAgo = (n) => new Date(Date.now() - n * 864e5).toISOString();
-  const seed = [
-    { id: 1, location: [39.9568, -85.9948], title: "Large pothole", category: "Pothole / road damage", description: "Large pothole causing vehicles to swerve into the opposite lane.", severity: "High", status: "Received", address: "Downtown Fishers", createdAt: daysAgo(4), votes: 6 },
-    { id: 2, location: [39.9675, -85.9942], title: "Drainage concern", category: "Flooding / drainage", description: "Water collects along the side of the road after heavy rain.", severity: "Medium", status: "Under review", address: "116th Street area", createdAt: daysAgo(5), votes: 3 },
-    { id: 3, location: [39.9492, -86.0235], title: "Damaged sidewalk", category: "Damaged sidewalk", description: "Raised section of sidewalk creating a tripping hazard.", severity: "Medium", status: "Resolved", address: "Southeast Fishers", createdAt: daysAgo(7), votes: 2 },
-    { id: 4, location: [39.9720, -86.0020], title: "Fallen tree", category: "Fallen tree", description: "Tree has fallen across part of a neighborhood path.", severity: "Critical", status: "In progress", address: "North Fishers", createdAt: daysAgo(3), votes: 9 }
-  ];
-
-  const read = (k, fallback) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? fallback; } catch { return fallback; } };
-  let reports = read(KEY, null);
-  if (!Array.isArray(reports)) {
-    // migrate v1 reports if present
-    const old = read("fixfishers_reports", null);
-    reports = Array.isArray(old) ? old.map((r) => ({
-      ...r, votes: 0, mine: true, createdAt: r.createdAt || new Date().toISOString(),
-      status: r.status === "New" ? "Received" : r.status
-    })) : seed.slice();
-  }
-  let voted = new Set(read(VOTES_KEY, []));
-  let activeId = null;
-
-  function save() {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(reports));
-      localStorage.setItem(VOTES_KEY, JSON.stringify([...voted]));
-      return true;
-    } catch { toast("Storage is full. Try a smaller photo or delete old reports."); return false; }
-  }
-
-  // ---------- HELPERS ----------
-  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const fmtDate = (iso) => new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-  let toastTimer;
-  function toast(msg) {
-    const t = $("toast"); t.textContent = msg; t.classList.add("show");
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
-  }
-  function compressImage(file, max, q, cb) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const s = Math.min(1, max / Math.max(img.width, img.height));
-        const c = document.createElement("canvas");
-        c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-        cb(c.toDataURL("image/jpeg", q));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-  async function getJSON(url, ms = 4000) {
-    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
-    try { const r = await fetch(url, { signal: ctl.signal }); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  // ---------- FISHERS BOUNDARY (Fishers, Indiana only) ----------
+  let boundary = null; // array of polygons: each = array of rings of [lng,lat]
+  const FB = "https://nominatim.openstreetmap.org/";
+  async function fetchJSON(url, ms = 6000) {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+    try { const r = await fetch(url, { signal: c.signal }); if (!r.ok) throw new Error(r.status); return await r.json(); }
     finally { clearTimeout(t); }
   }
-  const tidy = (s) => s.trim().replace(/,\s*(United States|USA)$/i, "").replace(/,\s*Indiana\b/i, ", IN");
+  async function loadBoundary() {
+    try {
+      const res = await fetchJSON(FB + "search?format=jsonv2&polygon_geojson=1&limit=5&q=Fishers,+Hamilton+County,+Indiana");
+      const hit = res.find((r) => r.geojson && /Polygon/.test(r.geojson.type) && /Fishers/i.test(r.display_name) && /Indiana/i.test(r.display_name));
+      if (!hit) return;
+      boundary = hit.geojson.type === "Polygon" ? [hit.geojson.coordinates] : hit.geojson.coordinates;
+      L.geoJSON(hit.geojson, { style: { color: "#ff6b2c", weight: 3, fillOpacity: 0.04, dashArray: "6 6" }, interactive: false }).addTo(map);
+      map.fitBounds(L.geoJSON(hit.geojson).getBounds(), { padding: [20, 20] });
+    } catch (e) { console.warn("FixFishers: boundary unavailable, using address check.", e); }
+  }
+  function inRing(x, y, ring) {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  }
+  const inBoundary = (ll) => boundary.some((poly) => inRing(ll.lng, ll.lat, poly[0]) && !poly.slice(1).some((h) => inRing(ll.lng, ll.lat, h)));
 
-  async function getAddress(lat, lng) {
-    try {
-      const d = await getJSON(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${lng},${lat}&f=json&distance=500&outSR=4326`);
-      const a = d && d.address;
-      if (a) {
-        const street = a.Address || a.StAddr, place = a.PlaceName || a.Name;
-        const city = a.City || "Fishers", tail = `${city}, ${a.RegionAbbr || "IN"}${a.Postal ? " " + a.Postal : ""}`;
-        if (place && street) return tidy(`${place}, ${street}, ${tail}`);
-        if (street) return tidy(`${street}, ${tail}`);
-        if (a.LongLabel) return tidy(a.LongLabel);
-      }
-    } catch (e) { console.warn("ArcGIS lookup failed", e); }
-    try {
-      const d = await getJSON(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-      const a = d && d.address;
-      if (a && a.road) return tidy(`${a.house_number ? a.house_number + " " : ""}${a.road}, ${a.city || a.town || "Fishers"}, IN`);
-      if (d && d.display_name) return tidy(d.display_name.split(",").slice(0, 3).join(","));
-    } catch (e) { console.warn("Nominatim lookup failed", e); }
-    return "Address unavailable";
+  // ---------- ADDRESSES ----------
+  function formatAddress(a, ll) {
+    const road = a.road || a.pedestrian || a.footway || a.path || a.cycleway;
+    const place = a.amenity || a.shop || a.leisure || a.tourism || a.school || a.building;
+    const street = a.house_number && road ? `${a.house_number} ${road}` : road;
+    const area = a.neighbourhood || a.suburb || a.residential || a.quarter;
+    const zip = a.postcode ? " " + a.postcode : "";
+    const tail = `Fishers, IN${zip}`;
+    if (street || place) return [place, street, tail].filter(Boolean).join(", ");
+    if (area) return `${area}, ${tail}`;
+    return `Near ${ll.lat.toFixed(4)}, ${ll.lng.toFixed(4)}, ${tail}`;
+  }
+  const isFishers = (a) => (a.city || a.town || a.village || a.municipality) === "Fishers" && a.state === "Indiana";
+  async function resolveLocation(ll) {
+    let a = {};
+    try { a = (await fetchJSON(`${FB}reverse?format=jsonv2&lat=${ll.lat}&lon=${ll.lng}&zoom=18&addressdetails=1`)).address || {}; } catch (e) {}
+    const ok = boundary ? inBoundary(ll) : isFishers(a);
+    return { ok, address: formatAddress(a, ll) };
   }
 
-  // ---------- FILTER OPTIONS ----------
-  Object.keys(CATEGORIES).forEach((c) => {
-    $("typeFilter").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`);
-    $("issueType").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`);
-  });
+  // ---------- DATA ----------
+  const KEY = "fixfishers_reports_v2", USER_KEY = "fixfishers_user";
+  const defaults = [
+    { id: 1, location: [39.9568, -85.9948], title: "Large pothole", category: "Pothole / road damage", description: "Large pothole causing vehicles to swerve into the opposite lane.", severity: "High", image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=80", status: "New", address: "Downtown Fishers, Fishers, IN", postedAt: "September 28, 2026", comments: [{ user: "Maria", text: "Hit this yesterday, definitely getting worse.", at: "Sep 29" }] },
+    { id: 2, location: [39.9675, -85.9942], title: "Drainage concern", category: "Flooding / drainage", description: "Water collects along the side of the road after heavy rain.", severity: "Medium", image: "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=900&q=80", status: "Under review", address: "116th Street area, Fishers, IN", postedAt: "September 27, 2026", comments: [] },
+    { id: 3, location: [39.9492, -86.0235], title: "Damaged sidewalk", category: "Damaged sidewalk", description: "Raised section of sidewalk creating a tripping hazard.", severity: "Medium", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80", status: "Resolved", address: "Southeast Fishers, Fishers, IN", postedAt: "September 25, 2026", comments: [] }
+  ];
+  const load = () => { try { const s = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(s)) return s; } catch (e) {} return defaults.slice(); };
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(reports)); return true; } catch (e) { alert("Storage full. Try a smaller photo or delete old reports."); return false; } }
+  let reports = load(), activeId = null, user = localStorage.getItem(USER_KEY) || "";
+
+  const colors = { "Pothole / road damage": "#2563eb", "Broken streetlight": "#7c3aed", "Flooding / drainage": "#0891b2", "Fallen tree": "#15803d", "Damaged sidewalk": "#a16207", "Broken sign": "#be185d", "Park issue": "#c2410c", "Other": "#475569" };
+  const sevColors = { Low: "#15803d", Medium: "#b88a00", High: "#ea580c", Critical: "#c81e1e" };
+  const statusClass = { New: "status-new", "Under review": "status-review", Resolved: "status-resolved" };
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ---------- ACCOUNTS (browser-local; see note in reply) ----------
+  function renderAccount() { $("accountButton").textContent = user ? `👤 ${user}` : "Sign in"; }
+  function signIn() {
+    const n = (prompt("Choose a display name to comment:", user) || "").trim().slice(0, 24);
+    if (n) { user = n; localStorage.setItem(USER_KEY, n); renderAccount(); }
+    return !!user;
+  }
+  $("accountButton").onclick = () => {
+    if (user && confirm(`Signed in as ${user}.\nOK = switch account, Cancel = stay.`)) { user = ""; localStorage.removeItem(USER_KEY); signIn(); }
+    else if (!user) signIn();
+    renderAccount();
+  };
 
   // ---------- RENDER ----------
-  function visible() {
-    const type = $("typeFilter").value, status = $("statusFilter").value;
-    const q = $("searchInput").value.trim().toLowerCase(), hide = $("hideResolved").checked;
-    const list = reports.filter((r) =>
-      (type === "all" || r.category === type) &&
-      (status === "all" || r.status === status) &&
-      !(hide && r.status === "Resolved") &&
+  const els = { type: $("typeFilter"), sev: $("severityFilter"), q: $("searchInput") };
+  function filtered() {
+    const q = els.q.value.trim().toLowerCase();
+    return reports.filter((r) => (els.type.value === "all" || r.category === els.type.value) && (els.sev.value === "all" || r.severity === els.sev.value) &&
       (!q || [r.title, r.address, r.description, r.category].some((f) => (f || "").toLowerCase().includes(q))));
-    const sort = $("sortSelect").value;
-    list.sort((a, b) =>
-      sort === "votes" ? b.votes - a.votes :
-      sort === "severity" ? SEV_RANK[b.severity] - SEV_RANK[a.severity] :
-      new Date(b.createdAt) - new Date(a.createdAt));
-    return list;
   }
-
   function addMarker(r) {
-    const done = r.status === "Resolved";
-    const icon = L.divIcon({
-      className: "fixfishers-marker-wrapper",
-      html: `<div class="custom-marker ${done ? "done" : ""}" style="--marker-color:${CATEGORIES[r.category] || CATEGORIES.Other};--status-color:${STATUS_COLOR[r.status]}"><span>${done ? "✓" : "!"}</span></div>`,
-      iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -38]
-    });
-    const popup = `<div class="map-popup">
-      ${r.image ? `<img class="popup-image" src="${esc(r.image)}" alt="Photo of ${esc(r.title)}">` : ""}
-      <h3>${esc(r.title)}</h3><p>${esc(r.description)}</p>
-      <div class="popup-meta">${esc(r.category)} · ${esc(r.severity)} · ${esc(r.status)}<br>${esc(r.address)}<br>${r.votes} neighbor${r.votes === 1 ? "" : "s"} reported this</div></div>`;
-    const m = L.marker(r.location, { icon, title: r.title }).bindPopup(popup);
+    const tc = colors[r.category] || colors.Other, sc = sevColors[r.severity];
+    const icon = L.divIcon({ className: "fixfishers-marker-wrapper", html: `<div class="custom-marker" style="--marker-color:${tc};--severity-color:${sc}"><span>!</span></div>`, iconSize: [42, 42], iconAnchor: [21, 42], popupAnchor: [0, -40] });
+    const img = r.image ? `<img class="popup-image" src="${esc(r.image)}" alt="">` : `<div class="popup-no-image">No photo</div>`;
+    const popup = `${img}<div class="popup-content"><div class="popup-topline"><span class="popup-category" style="color:${tc}">${esc(r.category)}</span><span class="popup-severity" style="background:${sc}">${esc(r.severity)}</span></div>
+      <h3>${esc(r.title)}</h3><p>${esc(r.description)}</p><div class="popup-address">📍 ${esc(r.address)}</div>
+      <span class="status-badge ${statusClass[r.status] || ""}">${esc(r.status)}</span> <button class="mini-btn" data-open="${r.id}">💬 ${(r.comments || []).length} · View</button></div>`;
+    const m = L.marker(r.location, { icon }).bindPopup(popup);
     m.on("click", () => setActive(r.id, true));
-    m.addTo(layer); markers[r.id] = m;
+    m.addTo(markerLayer); markers[r.id] = m;
   }
-
-  function track(status) {
-    const i = STATUSES.indexOf(status);
-    return `<div class="track" aria-hidden="true">${STATUSES.map((_, n) => `<i class="${n <= i ? "on" : ""}"></i>`).join("")}</div>
-      <div class="track-label">${esc(status)}</div>`;
-  }
-
-  function render() {
-    const list = visible();
+  function renderApp() {
+    const list = filtered();
     $("issueCount").textContent = list.length;
-    $("statOpen").textContent = reports.filter((r) => r.status === "Received" || r.status === "Under review").length;
-    $("statProgress").textContent = reports.filter((r) => r.status === "In progress").length;
-    $("statFixed").textContent = reports.filter((r) => r.status === "Resolved").length;
-
-    layer.clearLayers(); markers = {};
-    list.forEach(addMarker);
-
-    if (!list.length) {
-      $("issueList").innerHTML = `<div class="no-issues">No reports match. Clear a filter, or report something new.</div>`;
-      return;
-    }
-    $("issueList").innerHTML = list.map((r) => `
+    $("statTotal").textContent = reports.length;
+    $("statOpen").textContent = reports.filter((r) => r.status !== "Resolved").length;
+    $("statDone").textContent = reports.filter((r) => r.status === "Resolved").length;
+    markerLayer.clearLayers(); markers = {}; list.forEach(addMarker);
+    $("issueList").innerHTML = list.length ? list.map((r) => `
       <div class="issue-card ${r.id === activeId ? "active" : ""}" data-id="${r.id}">
-        ${r.image ? `<img class="issue-card-image" src="${esc(r.image)}" alt="Photo of ${esc(r.title)}">` : ""}
+        ${r.image ? `<img class="issue-card-image" src="${esc(r.image)}" alt="">` : ""}
         <div class="issue-card-content">
-          <div class="issue-card-top">
-            <div><h4 class="issue-card-title">${esc(r.title)}</h4>
-            <div class="issue-type" style="color:${CATEGORIES[r.category] || CATEGORIES.Other}">${esc(r.category)}</div></div>
-            <span class="severity-badge severity-${esc(r.severity.toLowerCase())}">${esc(r.severity)}</span>
-          </div>
+          <div class="issue-card-top"><div><h4 class="issue-card-title">${esc(r.title)}</h4><div class="issue-type" style="color:${colors[r.category] || colors.Other}">${esc(r.category)}</div></div>
+          <span class="severity-badge severity-${r.severity.toLowerCase()}">${esc(r.severity)}</span></div>
           <p class="issue-description">${esc(r.description)}</p>
-          <div class="issue-meta">${esc(r.address)}<br>Reported ${fmtDate(r.createdAt)}</div>
-          ${track(r.status)}
-          <div class="issue-card-footer">
-            <button type="button" class="mini ${voted.has(r.id) ? "voted" : ""}" data-vote="${r.id}" aria-pressed="${voted.has(r.id)}">
-              ${voted.has(r.id) ? "Supported" : "I see this too"} · ${r.votes}</button>
-            ${ADMIN ? `<button type="button" class="mini" data-advance="${r.id}">Advance status</button>` : ""}
-            ${r.mine ? `<button type="button" class="mini danger" data-delete="${r.id}">Delete</button>` : ""}
-          </div>
-        </div>
-      </div>`).join("");
+          <div class="issue-meta-row">📍 ${esc(r.address)}</div><div class="issue-meta-row">🕒 ${esc(r.postedAt)}</div>
+          <div class="issue-card-footer"><span class="status-badge ${statusClass[r.status] || ""}">${esc(r.status)}</span>
+          <span><button class="mini-btn" data-open="${r.id}">💬 ${(r.comments || []).length}</button> <button class="mini-btn danger" data-delete="${r.id}">Delete</button></span></div>
+        </div></div>`).join("") : `<div class="no-issues">No reports match these filters.</div>`;
   }
-
   function setActive(id, scroll) {
     activeId = id;
-    document.querySelectorAll(".issue-card").forEach((c) => {
-      const on = Number(c.dataset.id) === id;
-      c.classList.toggle("active", on);
-      if (on && scroll) c.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
+    document.querySelectorAll(".issue-card").forEach((c) => { const a = +c.dataset.id === id; c.classList.toggle("active", a); if (a && scroll) c.scrollIntoView({ behavior: "smooth", block: "nearest" }); });
   }
+  [els.type, els.sev].forEach((e) => e.addEventListener("change", renderApp));
+  els.q.addEventListener("input", renderApp);
 
-  $("issueList").addEventListener("click", (e) => {
-    const vote = e.target.closest("[data-vote]"), del = e.target.closest("[data-delete]"), adv = e.target.closest("[data-advance]");
-    if (vote) {
-      const r = reports.find((x) => x.id === Number(vote.dataset.vote));
-      if (voted.has(r.id)) { voted.delete(r.id); r.votes = Math.max(0, r.votes - 1); }
-      else { voted.add(r.id); r.votes++; }
-      save(); render(); return;
-    }
-    if (adv) {
-      const r = reports.find((x) => x.id === Number(adv.dataset.advance));
-      r.status = STATUSES[(STATUSES.indexOf(r.status) + 1) % STATUSES.length];
-      save(); render(); return;
-    }
+  // ---------- CLICKS: open details, delete, focus ----------
+  document.addEventListener("click", (e) => {
+    const open = e.target.closest("[data-open]"), del = e.target.closest("[data-delete]");
+    if (open) { e.stopPropagation(); return openDetail(+open.dataset.open); }
     if (del) {
-      const id = Number(del.dataset.delete);
-      if (confirm("Delete this report?")) { reports = reports.filter((r) => r.id !== id); save(); render(); }
+      e.stopPropagation(); const id = +del.dataset.delete;
+      if (confirm("Delete this report?")) { reports = reports.filter((r) => r.id !== id); save(); renderApp(); }
       return;
     }
     const card = e.target.closest(".issue-card");
-    if (!card) return;
-    const id = Number(card.dataset.id), r = reports.find((x) => x.id === id);
-    map.setView(r.location, 16);
-    if (markers[id]) markers[id].openPopup();
-    setActive(id, false);
+    if (card) { const id = +card.dataset.id, r = reports.find((x) => x.id === id); if (!r) return; map.setView(r.location, 16); markers[id] && markers[id].openPopup(); setActive(id, false); }
   });
 
-  ["typeFilter", "statusFilter", "sortSelect", "hideResolved"].forEach((id) => $(id).addEventListener("change", render));
-  $("searchInput").addEventListener("input", render);
+  // ---------- COMMENTS ----------
+  let detailId = null;
+  function openDetail(id) {
+    detailId = id;
+    const r = reports.find((x) => x.id === id); if (!r) return;
+    const cs = r.comments || [];
+    $("detailPanel").innerHTML = `<button class="close-btn" id="closeDetail">×</button>
+      <p class="eyebrow">${esc(r.category)}</p><h2>${esc(r.title)}</h2>
+      <span class="status-badge ${statusClass[r.status] || ""}">${esc(r.status)}</span> <span class="severity-badge severity-${r.severity.toLowerCase()}">${esc(r.severity)}</span>
+      ${r.image ? `<img class="detail-img" src="${esc(r.image)}" alt="">` : ""}
+      <p>${esc(r.description)}</p><p class="location-status">📍 ${esc(r.address)} · 🕒 ${esc(r.postedAt)}</p>
+      <div class="comments"><h4>Comments (${cs.length})</h4>
+      ${cs.map((c) => `<div class="comment"><b>${esc(c.user)}</b><small>${esc(c.at)}</small><p>${esc(c.text)}</p></div>`).join("") || `<p class="location-status">No comments yet. Start the conversation.</p>`}
+      <div class="comment-form"><input type="text" id="commentText" maxlength="300" placeholder="${user ? `Comment as ${esc(user)}...` : "Sign in to comment..."}"><button type="button" id="postComment">Post</button></div></div>`;
+    $("detailOverlay").classList.add("active");
+    $("closeDetail").onclick = () => $("detailOverlay").classList.remove("active");
+    const post = () => {
+      const t = $("commentText").value.trim(); if (!t) return;
+      if (!user && !signIn()) return;
+      r.comments = cs.concat({ user, text: t, at: new Date().toLocaleDateString() });
+      save(); renderApp(); openDetail(id);
+    };
+    $("postComment").onclick = post;
+    $("commentText").onkeydown = (e) => e.key === "Enter" && post();
+  }
+  $("detailOverlay").addEventListener("click", (e) => e.target.id === "detailOverlay" && e.target.classList.remove("active"));
 
   // ---------- REPORT PANEL ----------
-  const overlay = $("reportOverlay");
-  const openPanel = () => { overlay.classList.add("active"); overlay.setAttribute("aria-hidden", "false"); };
-  const closePanel = () => { overlay.classList.remove("active"); overlay.setAttribute("aria-hidden", "true"); };
-  $("reportButton").addEventListener("click", openPanel);
-  $("closeReport").addEventListener("click", closePanel);
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) closePanel(); });
+  const open = () => $("reportOverlay").classList.add("active"), close = () => $("reportOverlay").classList.remove("active");
+  $("reportButton").onclick = open; $("closeReport").onclick = close;
+  $("reportOverlay").addEventListener("click", (e) => e.target.id === "reportOverlay" && close());
 
-  let picked = null, pickedAddress = "", pickMarker = null, selecting = false, token = 0, image = null;
+  let selected = null, selectedAddress = "", selectedImage = null, selMarker = null, picking = false;
+  const status = (txt, cls) => { $("locationStatus").textContent = txt; $("locationStatus").className = "location-status " + (cls || ""); };
 
-  function clearImage() { image = null; $("issueImage").value = ""; $("imagePreview").innerHTML = ""; }
-  $("issueImage").addEventListener("change", () => {
-    const f = $("issueImage").files[0];
-    if (!f) return clearImage();
-    if (!f.type.startsWith("image/")) { toast("Please choose an image file."); return clearImage(); }
-    compressImage(f, 800, 0.72, (url) => {
-      image = url;
-      $("imagePreview").innerHTML = `<div class="preview-wrapper"><img src="${url}" alt="Selected photo"><button type="button" id="removeImage" class="mini danger">Remove photo</button></div>`;
-      $("removeImage").addEventListener("click", clearImage);
-    });
+  async function setLocation(ll, label) {
+    status("Checking location...", "waiting");
+    const res = await resolveLocation(ll);
+    if (!res.ok) { selected = null; status("⚠️ That spot is outside Fishers, Indiana. Choose a location inside Fishers.", "error"); return false; }
+    selected = L.latLng(ll.lat, ll.lng); selectedAddress = label || res.address;
+    if (selMarker) map.removeLayer(selMarker);
+    selMarker = L.marker(selected).addTo(map).bindPopup(`<div class="popup-content"><b>Report location</b><br>${esc(selectedAddress)}</div>`);
+    status("📍 " + selectedAddress); return true;
+  }
+
+  // location search (bounded to Fishers area, then verified)
+  let searchTimer;
+  $("placeSearch").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    const q = e.target.value.trim(), box = $("placeResults");
+    if (q.length < 3) { box.innerHTML = ""; return; }
+    searchTimer = setTimeout(async () => {
+      box.innerHTML = `<div class="none">Searching...</div>`;
+      try {
+        const vb = "-86.080,40.010,-85.930,39.900";
+        const res = await fetchJSON(`${FB}search?format=jsonv2&addressdetails=1&limit=8&bounded=1&viewbox=${vb}&q=${encodeURIComponent(q + " Fishers Indiana")}`);
+        const good = res.filter((r) => { const ll = { lat: +r.lat, lng: +r.lon }; return boundary ? inBoundary(ll) : isFishers(r.address || {}); }).slice(0, 5);
+        box.innerHTML = good.length ? "" : `<div class="none">No matches inside Fishers, IN.</div>`;
+        good.forEach((r) => {
+          const b = document.createElement("button"); b.type = "button";
+          b.textContent = formatAddress(r.address || {}, { lat: +r.lat, lng: +r.lon });
+          b.onclick = async () => {
+            const ll = { lat: +r.lat, lng: +r.lon };
+            if (await setLocation(ll, b.textContent)) { box.innerHTML = ""; $("placeSearch").value = ""; map.setView(ll, 16); }
+          };
+          box.appendChild(b);
+        });
+      } catch (err) { box.innerHTML = `<div class="none">Search unavailable. Use "pick on the map" instead.</div>`; }
+    }, 450);
   });
 
-  function checkDupes() {
-    const box = $("dupeWarning");
-    if (!picked) { box.hidden = true; return; }
-    const near = reports.filter((r) => r.status !== "Resolved" && r.category === $("issueType").value &&
-      map.distance(r.location, [picked.lat, picked.lng]) <= DUPE_METERS);
-    if (!near.length) { box.hidden = true; return; }
-    const r = near[0];
-    box.hidden = false;
-    box.innerHTML = `Someone already reported "<strong>${esc(r.title)}</strong>" nearby (${esc(r.status)}). If it's the same problem, support it instead of filing a new report.
-      <br><button type="button" class="mini" id="dupeSupport">${voted.has(r.id) ? "Already supported" : "Support existing report"}</button>`;
-    $("dupeSupport").addEventListener("click", () => {
-      if (!voted.has(r.id)) { voted.add(r.id); r.votes++; save(); }
-      resetForm(); closePanel(); activeId = r.id; render();
-      map.setView(r.location, 16); if (markers[r.id]) markers[r.id].openPopup();
-      toast("Thanks. Your support was added.");
-    });
-  }
-  $("issueType").addEventListener("change", checkDupes);
-
-  async function setLocation(latlng) {
-    picked = latlng; pickedAddress = "";
-    const mine = ++token;
-    $("locationStatus").textContent = "Finding address…";
-    $("locationStatus").classList.add("waiting");
-    if (pickMarker) map.removeLayer(pickMarker);
-    pickMarker = L.marker(latlng).addTo(map);
-    checkDupes();
-    openPanel();
-    const addr = await getAddress(latlng.lat, latlng.lng);
-    if (mine !== token || !picked) return;
-    pickedAddress = addr;
-    $("locationStatus").textContent = addr;
-    $("locationStatus").classList.remove("waiting");
-  }
-
-  function stopSelecting() { selecting = false; map.getContainer().classList.remove("selecting-location"); }
-
-  $("chooseLocation").addEventListener("click", () => {
-    closePanel(); selecting = true;
-    map.getContainer().classList.add("selecting-location");
+  // pick on map
+  $("chooseLocation").onclick = () => {
+    close(); picking = true; map.getContainer().classList.add("selecting-location");
+    status("Click anywhere inside Fishers on the map.", "waiting");
     $("map").scrollIntoView({ behavior: "smooth", block: "center" });
-  });
-  map.on("click", (e) => { if (selecting) { stopSelecting(); setLocation(e.latlng); } });
-
-  $("useMyLocation").addEventListener("click", () => {
-    if (!navigator.geolocation) return toast("Your browser can't share its location.");
-    $("locationStatus").textContent = "Getting your location…";
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
-      if (!bounds.contains(ll)) { $("locationStatus").textContent = "That's outside Fishers. Pick a spot on the map instead."; return; }
-      map.setView(ll, 16); setLocation(ll);
-    }, () => { $("locationStatus").textContent = "Couldn't get your location. Pick a spot on the map instead."; }, { timeout: 8000 });
-  });
-
+  };
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
-    if (selecting) { stopSelecting(); openPanel(); } else closePanel();
+    if (picking) { picking = false; map.getContainer().classList.remove("selecting-location"); status(selected ? "📍 " + selectedAddress : "Location not selected"); open(); }
+    else { close(); $("detailOverlay").classList.remove("active"); }
+  });
+  map.on("click", async (e) => {
+    if (!picking) return;
+    picking = false; map.getContainer().classList.remove("selecting-location");
+    open(); await setLocation(e.latlng);
   });
 
-  function resetForm() {
-    $("reportForm").reset(); clearImage(); token++;
-    if (pickMarker) { map.removeLayer(pickMarker); pickMarker = null; }
-    picked = null; pickedAddress = "";
-    $("locationStatus").textContent = "Location not selected";
-    $("locationStatus").classList.remove("waiting");
-    $("dupeWarning").hidden = true; $("formError").hidden = true;
-  }
+  // image
+  function clearImage() { selectedImage = null; $("issueImage").value = ""; $("imagePreview").innerHTML = ""; }
+  $("issueImage").addEventListener("change", () => {
+    const f = $("issueImage").files[0]; if (!f) return clearImage();
+    const rd = new FileReader();
+    rd.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const s = Math.min(1, 800 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+        c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        selectedImage = c.toDataURL("image/jpeg", 0.72);
+        $("imagePreview").innerHTML = `<div class="preview-wrapper"><img src="${selectedImage}" alt=""><button type="button" id="rmImg" class="mini-btn danger">Remove photo</button></div>`;
+        $("rmImg").onclick = clearImage;
+      };
+      img.src = ev.target.result;
+    };
+    rd.readAsDataURL(f);
+  });
 
+  // submit
   $("reportForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    const err = $("formError");
-    const desc = $("issueDescription").value.trim();
-    if (!picked) { err.textContent = "Choose a location first: pick on the map or use your location."; err.hidden = false; return; }
-    if (!desc) { err.textContent = "Add a short description so crews know what to look for."; err.hidden = false; return; }
-    err.hidden = true;
-
+    if (!selected) return alert("Please choose a location inside Fishers, Indiana.");
+    const description = $("issueDescription").value.trim();
+    if (!description) return alert("Please add a description.");
     const category = $("issueType").value;
-    const r = {
-      id: Date.now(), location: [picked.lat, picked.lng], title: $("issueTitle").value.trim() || category,
-      category, description: desc, severity: $("issueSeverity").value, image, status: "Received",
-      address: pickedAddress || "Address unavailable", createdAt: new Date().toISOString(), votes: 1, mine: true
-    };
-    reports.unshift(r); voted.add(r.id);
-    if (!save()) { reports.shift(); voted.delete(r.id); return; }
-
-    ["typeFilter", "statusFilter"].forEach((id) => ($(id).value = "all"));
-    $("searchInput").value = ""; $("hideResolved").checked = false;
-    resetForm(); closePanel(); activeId = r.id; render();
-    map.setView(r.location, 16); if (markers[r.id]) markers[r.id].openPopup();
-    toast("Report submitted. Thank you!");
+    const r = { id: Date.now(), location: [selected.lat, selected.lng], title: $("issueTitle").value.trim() || category, category, description, severity: $("issueSeverity").value, image: selectedImage, status: "New", address: selectedAddress, postedAt: new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }), comments: [] };
+    reports.unshift(r);
+    if (!save()) { reports.shift(); return; }
+    els.type.value = els.sev.value = "all"; els.q.value = "";
+    if (selMarker) { map.removeLayer(selMarker); selMarker = null; }
+    $("reportForm").reset(); clearImage(); selected = null; selectedAddress = ""; status("Location not selected");
+    close(); activeId = r.id; renderApp(); map.setView(r.location, 16); markers[r.id] && markers[r.id].openPopup();
   });
 
-  render();
-  setTimeout(() => map.invalidateSize(), 400);
+  renderAccount(); renderApp(); loadBoundary();
+  setTimeout(() => map.invalidateSize(), 500);
 });
