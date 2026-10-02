@@ -4,159 +4,116 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FixFishers — Community Repair</title>
-
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <script src="script.js" defer></script>
 </head>
-
 <body>
+  <a class="skip" href="#map">Skip to map</a>
 
   <header class="header">
-    <div class="brand">
-      <span class="brand-mark">F+</span>
-      <span>Fix<span>Fishers</span></span>
-    </div>
-    <button type="button" id="reportButton" class="report-button">+ Report an issue</button>
+    <div class="brand"><span class="brand-mark">F+</span><span>Fix<b>Fishers</b></span></div>
+    <button type="button" id="reportButton" class="btn primary">Report an issue</button>
   </header>
 
   <main>
-
     <section class="intro">
       <div>
-        <p class="eyebrow">COMMUNITY REPAIR</p>
-        <h1>
-          See something that needs fixing?
-          <span>Put it on the map.</span>
-        </h1>
-        <p class="description">
-          Explore community-reported issues around Fishers and help
-          make your neighborhood better.
-        </p>
+        <h1>See something that needs fixing? <em>Put it on the map.</em></h1>
+        <p class="description">Report potholes, broken lights and other problems in Fishers, back up reports from your neighbors, and watch each one move from reported to fixed.</p>
+        <p class="emergency"><strong>Emergency?</strong> Downed power lines, blocked roads or anyone in danger: call 911. This app is not monitored in real time.</p>
       </div>
+      <dl class="stats" aria-label="Report summary">
+        <div><dt>Open</dt><dd id="statOpen">0</dd></div>
+        <div><dt>In progress</dt><dd id="statProgress">0</dd></div>
+        <div><dt>Fixed</dt><dd id="statFixed">0</dd></div>
+      </dl>
     </section>
 
     <section class="map-section">
-
       <div class="map-header">
         <div>
           <h2>Community map</h2>
-          <p>Explore reported issues around Fishers.</p>
+          <p>Tap a pin or a card. Seeing the same problem? Add your support instead of filing a duplicate.</p>
         </div>
-        <div class="map-status"><span></span> Live map</div>
+        <div class="legend">
+          <span><i class="dot s-received"></i>Received</span>
+          <span><i class="dot s-review"></i>Under review</span>
+          <span><i class="dot s-progress"></i>In progress</span>
+          <span><i class="dot s-resolved"></i>Resolved</span>
+        </div>
       </div>
 
       <div class="map-with-sidebar">
-
-        <div id="map"></div>
+        <div id="map" role="application" aria-label="Map of reported issues"></div>
 
         <aside class="issue-sidebar">
-
           <div class="issue-sidebar-header">
-            <div>
-              <p class="eyebrow">COMMUNITY REPORTS</p>
-              <h3>Issues nearby</h3>
-            </div>
-            <span id="issueCount">0</span>
+            <h3>Reports</h3>
+            <span id="issueCount" aria-live="polite">0</span>
           </div>
-
           <div class="issue-filters">
-            <input type="search" id="searchInput" placeholder="Search reports or locations...">
-
-            <select id="typeFilter">
-              <option value="all">All repair types</option>
-              <option value="Pothole / road damage">Pothole / road damage</option>
-              <option value="Broken streetlight">Broken streetlight</option>
-              <option value="Flooding / drainage">Flooding / drainage</option>
-              <option value="Fallen tree">Fallen tree</option>
-              <option value="Damaged sidewalk">Damaged sidewalk</option>
-              <option value="Broken sign">Broken sign</option>
-              <option value="Park issue">Park issue</option>
-              <option value="Other">Other</option>
+            <input type="search" id="searchInput" placeholder="Search reports or locations" aria-label="Search reports">
+            <select id="typeFilter" aria-label="Filter by type">
+              <option value="all">All types</option>
             </select>
-
-            <select id="severityFilter">
-              <option value="all">All severity</option>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-              <option value="Critical">Critical</option>
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="all">All statuses</option>
+              <option>Received</option><option>Under review</option><option>In progress</option><option>Resolved</option>
             </select>
+            <select id="sortSelect" aria-label="Sort reports">
+              <option value="new">Newest first</option>
+              <option value="votes">Most supported</option>
+              <option value="severity">Most severe</option>
+            </select>
+            <label class="check"><input type="checkbox" id="hideResolved"> Hide resolved</label>
           </div>
-
           <div id="issueList" class="issue-list"></div>
-
         </aside>
-
       </div>
-
-      <div class="legend">
-        <div><span class="legend-dot new"></span> New</div>
-        <div><span class="legend-dot review"></span> Under review</div>
-        <div><span class="legend-dot resolved"></span> Resolved</div>
-      </div>
-
     </section>
-
   </main>
 
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <!-- REPORT PANEL -->
-  <div id="reportOverlay" class="report-overlay">
-    <div class="report-panel">
-
+  <div id="reportOverlay" class="report-overlay" aria-hidden="true">
+    <div class="report-panel" role="dialog" aria-modal="true" aria-labelledby="reportHeading">
       <button type="button" id="closeReport" class="close-report" aria-label="Close">×</button>
+      <h2 id="reportHeading">What needs fixing?</h2>
+      <p class="report-subtitle">Pick the spot first, then add the details. It takes about a minute.</p>
 
-      <p class="eyebrow">NEW COMMUNITY REPORT</p>
-      <h2>What needs fixing?</h2>
-      <p class="report-subtitle">Tell Fishers about an issue you've noticed.</p>
-
-      <form id="reportForm">
-
-        <label for="issueTitle">Report title</label>
-        <input type="text" id="issueTitle" placeholder="e.g. Pothole on 116th St" maxlength="80">
+      <form id="reportForm" novalidate>
+        <div class="loc-row">
+          <button type="button" id="chooseLocation" class="btn outline">Pick on map</button>
+          <button type="button" id="useMyLocation" class="btn outline">Use my location</button>
+        </div>
+        <p id="locationStatus" class="location-status">Location not selected</p>
+        <div id="dupeWarning" class="dupe" hidden></div>
 
         <label for="issueType">Issue type</label>
-        <select id="issueType">
-          <option value="Pothole / road damage">Pothole / road damage</option>
-          <option value="Broken streetlight">Broken streetlight</option>
-          <option value="Flooding / drainage">Flooding / drainage</option>
-          <option value="Fallen tree">Fallen tree</option>
-          <option value="Damaged sidewalk">Damaged sidewalk</option>
-          <option value="Broken sign">Broken sign</option>
-          <option value="Park issue">Park issue</option>
-          <option value="Other">Other</option>
-        </select>
+        <select id="issueType"></select>
 
-        <label for="issueSeverity">Severity</label>
+        <label for="issueTitle">Short title <span class="opt">(optional)</span></label>
+        <input type="text" id="issueTitle" placeholder="e.g. Pothole on 116th St" maxlength="80">
+
+        <label for="issueSeverity">How serious is it?</label>
         <select id="issueSeverity">
-          <option value="Low">Low</option>
-          <option value="Medium" selected>Medium</option>
-          <option value="High">High</option>
-          <option value="Critical">Critical</option>
+          <option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option>
         </select>
-
-        <label for="issueImage">Photo of the issue</label>
-        <input type="file" id="issueImage" accept="image/*">
-        <p class="image-help">Upload a photo showing the repair that is needed.</p>
-        <div id="imagePreview" class="image-preview"></div>
 
         <label for="issueDescription">Description</label>
-        <textarea id="issueDescription" placeholder="Describe what you noticed..." rows="4"></textarea>
+        <textarea id="issueDescription" rows="3" maxlength="500" placeholder="What did you notice? Which lane, which side of the street?"></textarea>
 
-        <button type="button" id="chooseLocation" class="location-button">
-          📍 Choose location on map
-        </button>
-        <p id="locationStatus" class="location-status">Location not selected</p>
+        <label for="issueImage">Photo <span class="opt">(optional)</span></label>
+        <input type="file" id="issueImage" accept="image/*">
+        <p class="image-help">Avoid capturing faces or license plates.</p>
+        <div id="imagePreview" class="image-preview"></div>
 
-        <button type="submit" id="submitReport" class="submit-report">Submit report →</button>
-
+        <p id="formError" class="form-error" role="alert" hidden></p>
+        <button type="submit" class="btn primary wide">Submit report</button>
       </form>
-
     </div>
   </div>
-
 </body>
 </html>
